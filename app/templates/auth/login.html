@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Log In{% endblock %}
+{% block content %}
+<p class="section-label">Log In</p>
+
+<form method="post" novalidate style="max-width: 380px;">
+  {{ form.hidden_tag() }}
+  <div class="form-field">
+    {{ form.email.label }}
+    {{ form.email() }}
+    {% for e in form.email.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+  <div class="form-field">
+    {{ form.password.label }}
+    {{ form.password() }}
+    {% for e in form.password.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+  {{ form.submit(class="btn") }}
+</form>
+
+<p style="margin-top: 16px; font-size: 0.9rem;">
+  New here? <a href="{{ url_for('auth.register') }}">Request registration</a>.
+</p>
+{% endblock %}

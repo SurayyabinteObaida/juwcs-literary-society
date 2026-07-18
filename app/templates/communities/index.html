@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Communities{% endblock %}
+{% block content %}
+<p class="section-label"><span>Communities</span></p>
+{% if communities %}
+  <div class="community-list">
+    {% for c in communities %}
+      <div class="community-row">
+        <div class="community-row-main">
+          <h3><a href="{{ url_for('communities.detail', slug=c.slug) }}">{{ c.name }}</a></h3>
+          <p>{{ c.description }}</p>
+          <div class="tag-row">
+            {% for cat in c.categories %}<span class="tag">{{ cat.label }}</span>{% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">No communities yet.</div>
+{% endif %}
+{% endblock %}

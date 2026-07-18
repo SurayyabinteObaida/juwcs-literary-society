@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ community.name }}{% endblock %}
+{% block content %}
+
+<div class="page-grid">
+  <div>
+    <p class="eyebrow">Community</p>
+    <h1>{{ community.name }}</h1>
+    <p style="color: var(--ink-soft); max-width: 560px;">{{ community.description }}</p>
+
+    {% if community.guidelines_text %}
+      <p style="font-size: 0.9rem; color: var(--ink-faint); margin: 14px 0 0; max-width: 560px;">
+        {{ community.guidelines_text }}
+      </p>
+    {% endif %}
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 32px 0 8px; flex-wrap: wrap; gap: 16px;">
+      <div class="tag-row">
+        <a href="{{ url_for('communities.detail', slug=community.slug) }}"
+           class="tag-pill {{ 'active' if not active_category_id else '' }}">All</a>
+        {% for cat in community.categories %}
+          <a href="{{ url_for('communities.detail', slug=community.slug, category=cat.id) }}"
+             class="tag-pill {{ 'active' if active_category_id == cat.id else '' }}">{{ cat.label }}</a>
+        {% endfor %}
+      </div>
+      {% if current_user.is_authenticated and current_user.is_approved %}
+        <a class="btn" href="{{ url_for('posts.create', slug=community.slug) }}">Write a post</a>
+      {% endif %}
+    </div>
+
+    {% if posts %}
+      {% for post in posts %}
+        <article class="post-entry">
+          <p class="dateline">
+            {{ post.created_at.strftime('%d %b %Y') }}
+            {% for cat in post.categories %}<span class="accent-dot">&#183;</span>{{ cat.label }}{% endfor %}
+          </p>
+          <h3 class="post-title"><a href="{{ url_for('posts.view', post_id=post.id) }}">{{ post.title }}</a></h3>
+          <p class="post-author">by {{ post.author.name }}</p>
+          <p class="post-meta">
+            <span>{{ post.reaction_count('like') }} likes</span>
+            <span>{{ post.comments.count() }} comments</span>
+          </p>
+        </article>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        Nothing here yet.
+        {% if current_user.is_authenticated and current_user.is_approved %}
+          <a href="{{ url_for('posts.create', slug=community.slug) }}">Write the first post</a>.
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <aside>
+    <div class="sidebar-block">
+      <h3>Tags</h3>
+      <div class="tag-row">
+        {% for cat in community.categories %}<span class="tag">{{ cat.label }}</span>{% endfor %}
+      </div>
+    </div>
+  </aside>
+</div>
+
+{% endblock %}

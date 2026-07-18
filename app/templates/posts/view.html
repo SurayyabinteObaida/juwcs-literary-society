@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+<div class="read-width">
+
+<p class="dateline">
+  <a href="{{ url_for('communities.detail', slug=post.community.slug) }}">{{ post.community.name }}</a>
+  <span class="accent-dot">&#183;</span>{{ post.created_at.strftime('%d %b %Y') }}
+  {% for cat in post.categories %}<span class="accent-dot">&#183;</span>{{ cat.label }}{% endfor %}
+</p>
+<h1>{{ post.title }}</h1>
+<p style="color: var(--ink-faint);">by {{ post.author.name }}</p>
+
+<div class="post-full-body">{{ post.body }}</div>
+
+<div class="post-meta">
+  {% if current_user.is_authenticated and current_user.is_approved and current_user.id != post.author_id %}
+    <form method="post" action="{{ url_for('posts.react', post_id=post.id, reaction_type='like') }}" class="inline-form">
+      <button type="submit" class="reaction-btn {{ 'active' if user_has_liked else '' }}">
+        {{ 'Liked' if user_has_liked else 'Like' }} &middot; {{ like_count }}
+      </button>
+    </form>
+    <form method="post" action="{{ url_for('posts.react', post_id=post.id, reaction_type='report') }}" class="inline-form">
+      <button type="submit" class="reaction-btn report {{ 'active' if user_has_reported else '' }}">
+        {{ 'Reported' if user_has_reported else 'Report' }}
+      </button>
+    </form>
+  {% else %}
+    <span>{{ like_count }} likes</span>
+  {% endif %}
+</div>
+
+<section style="margin-top: 36px;">
+  <p class="section-label">Comments</p>
+
+  {% if current_user.is_authenticated and current_user.is_approved %}
+    <form method="post" style="margin-bottom: 24px;">
+      {{ comment_form.hidden_tag() }}
+      <div class="form-field">
+        {{ comment_form.body(placeholder="Share your thoughts...", maxlength=500) }}
+        {% for e in comment_form.body.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+      </div>
+      {{ comment_form.submit(class="btn") }}
+    </form>
+  {% elif not current_user.is_authenticated %}
+    <p style="color: var(--ink-faint); font-size: 0.9rem;">
+      <a href="{{ url_for('auth.login') }}">Log in</a> to comment.
+    </p>
+  {% endif %}
+
+  {% set comment_list = post.comments.all() %}
+  {% if comment_list %}
+    {% for c in comment_list %}
+      <div class="comment">
+        <p class="comment-meta">{{ c.author.name }} &middot; {{ c.created_at.strftime('%d %b %Y') }}</p>
+        <p>{{ c.body }}</p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p style="color: var(--ink-faint); font-size: 0.9rem;">No comments yet.</p>
+  {% endif %}
+</section>
+
+</div>
+{% endblock %}

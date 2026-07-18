@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Pending Registrations{% endblock %}
+{% block content %}
+<p class="section-label">Pending Registrations</p>
+
+{% if users %}
+  <table class="admin-table">
+    <thead><tr><th>Name</th><th>Email</th><th>Requested</th><th></th></tr></thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin.approve_user', user_id=user.id) }}" class="inline-form">
+              <button type="submit" class="btn" style="padding: 4px 10px; font-size: 0.8rem;">Approve</button>
+            </form>
+            <form method="post" action="{{ url_for('admin.reject_user', user_id=user.id) }}" class="inline-form">
+              <button type="submit" class="btn secondary" style="padding: 4px 10px; font-size: 0.8rem;">Reject</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-state">No pending registrations.</div>
+{% endif %}
+{% endblock %}

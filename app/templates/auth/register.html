@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Request Registration{% endblock %}
+{% block content %}
+<p class="section-label">Request Registration</p>
+<p style="color: var(--ink-faint); max-width: 480px;">
+  Submit your details below. The society admin will review and approve your
+  account before you can post or comment.
+</p>
+
+<form method="post" novalidate style="max-width: 420px;">
+  {{ form.hidden_tag() }}
+  <div class="form-field">
+    {{ form.name.label }}
+    {{ form.name() }}
+    {% for e in form.name.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+  <div class="form-field">
+    {{ form.email.label }}
+    {{ form.email() }}
+    {% for e in form.email.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+  <div class="form-field">
+    {{ form.password.label }}
+    {{ form.password() }}
+    {% for e in form.password.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+  <div class="form-field">
+    {{ form.confirm_password.label }}
+    {{ form.confirm_password() }}
+    {% for e in form.confirm_password.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+  {{ form.submit(class="btn") }}
+</form>
+
+<p style="margin-top: 16px; font-size: 0.9rem;">
+  Already approved? <a href="{{ url_for('auth.login') }}">Log in</a>.
+</p>
+{% endblock %}

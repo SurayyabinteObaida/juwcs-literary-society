@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Write &mdash; {{ community.name }}{% endblock %}
+{% block content %}
+<div class="form-wrap">
+<p class="section-label">New Post in {{ community.name }}</p>
+
+<form method="post" novalidate>
+  {{ form.hidden_tag() }}
+
+  <div class="form-field">
+    {{ form.title.label }}
+    {{ form.title(placeholder="Give your piece a title") }}
+    {% for e in form.title.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+
+  <div class="form-field">
+    {{ form.body.label }}
+    {{ form.body(id="post-body", placeholder="Write here...", maxlength=2000) }}
+    <div class="char-counter" id="char-counter">0 / 2000</div>
+    {% for e in form.body.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+
+  {% if form.categories.choices %}
+    <div class="form-field">
+      <label>Tags</label>
+      <ul class="checkbox-list">
+        {% for subfield in form.categories %}
+          <li>{{ subfield }} {{ subfield.label }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {{ form.submit(class="btn") }}
+  <a href="{{ url_for('communities.detail', slug=community.slug) }}" class="btn secondary">Cancel</a>
+</form>
+
+<script>
+  const body = document.getElementById('post-body');
+  const counter = document.getElementById('char-counter');
+  const max = 2000;
+  function updateCounter() {
+    const len = body.value.length;
+    counter.textContent = len + ' / ' + max;
+    counter.classList.toggle('over', len > max);
+  }
+  body.addEventListener('input', updateCounter);
+  updateCounter();
+</script>
+</div>
+
+{% endblock %}

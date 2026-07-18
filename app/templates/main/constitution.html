@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Constitution{% endblock %}
+{% block content %}
+<p class="section-label">Constitution {% if doc %}&middot; v{{ doc.version }}{% endif %}</p>
+{% if doc %}
+  <div class="constitution-body">{{ doc.body | markdown | safe }}</div>
+{% else %}
+  <div class="empty-state">The constitution has not been published yet.</div>
+{% endif %}
+{% endblock %}

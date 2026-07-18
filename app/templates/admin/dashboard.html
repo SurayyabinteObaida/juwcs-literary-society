@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<p class="section-label">Admin</p>
+
+<div class="community-grid" style="margin-bottom: 32px;">
+  <div class="community-card">
+    <h3>Pending Registrations</h3>
+    <p>{{ pending_count }} awaiting approval</p>
+    <a href="{{ url_for('admin.pending_users') }}" class="btn secondary">Review</a>
+  </div>
+</div>
+
+<p class="section-label">Reported Posts</p>
+{% if reported_posts %}
+  <table class="admin-table">
+    <thead><tr><th>Title</th><th>Author</th><th>Community</th><th>Reports</th><th></th></tr></thead>
+    <tbody>
+      {% for post in reported_posts %}
+        <tr>
+          <td><a href="{{ url_for('posts.view', post_id=post.id) }}">{{ post.title }}</a></td>
+          <td>{{ post.author.name }}</td>
+          <td>{{ post.community.name }}</td>
+          <td>{{ post.reaction_count('report') }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin.remove_post', post_id=post.id) }}" class="inline-form">
+              <button type="submit" class="btn danger" style="padding: 4px 10px; font-size: 0.8rem;">Remove Post</button>
+            </form>
+            <form method="post" action="{{ url_for('admin.dismiss_reports', post_id=post.id) }}" class="inline-form">
+              <button type="submit" class="btn secondary" style="padding: 4px 10px; font-size: 0.8rem;">Dismiss Reports</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-state">No reported posts.</div>
+{% endif %}
+{% endblock %}

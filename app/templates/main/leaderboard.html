@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Top Contributors{% endblock %}
+{% block content %}
+<div class="read-width">
+<p class="section-label">Top Contributors</p>
+{% if leaders %}
+  <table class="leaderboard">
+    <thead>
+      <tr><th>Rank</th><th>Name</th><th>Posts</th><th>Likes</th><th>Reports</th></tr>
+    </thead>
+    <tbody>
+      {% for l in leaders %}
+        <tr>
+          <td class="rank-num">{{ loop.index }}</td>
+          <td>{{ l.name }}</td>
+          <td>{{ l.post_count }}</td>
+          <td>{{ l.likes_received }}</td>
+          <td>{{ l.reports_received }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-state">No contributions yet.</div>
+{% endif %}
+</div>
+{% endblock %}
