@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template
 
-from app.models import Community, Post, PostStatus, SiteConstitution
+from app.extensions import db
+from app.models import Community, Post, PostStatus, SiteConstitution, User, UserStatus
 from app.services.leaderboard import top_contributors
 
 bp = Blueprint("main", __name__, template_folder="../../templates/main")
@@ -8,6 +9,17 @@ bp = Blueprint("main", __name__, template_folder="../../templates/main")
 
 @bp.route("/")
 def index():
+    communities = Community.query.order_by(Community.name).all()
+    stats = {
+        "communities": len(communities),
+        "members": User.query.filter_by(status=UserStatus.APPROVED.value).count(),
+        "posts": Post.query.filter_by(status=PostStatus.PUBLISHED.value).count(),
+    }
+    return render_template("main/landing.html", communities=communities, stats=stats)
+
+
+@bp.route("/feed")
+def feed():
     communities = Community.query.order_by(Community.name).all()
     recent_posts = (
         Post.query.filter_by(status=PostStatus.PUBLISHED.value)
@@ -19,18 +31,12 @@ def index():
     feed_posts = recent_posts[1:] if recent_posts else []
     leaders = top_contributors(limit=5)
     return render_template(
-        "main/index.html",
+        "main/feed.html",
         communities=communities,
         featured_post=featured_post,
         feed_posts=feed_posts,
         leaders=leaders,
     )
-
-
-@bp.route("/about")
-def about():
-    communities = Community.query.order_by(Community.name).all()
-    return render_template("main/landing.html", communities=communities)
 
 
 @bp.route("/leaderboard")
