@@ -40,12 +40,14 @@ def create_app(config_class=Config):
     from app.blueprints.communities import bp as communities_bp
     from app.blueprints.posts import bp as posts_bp
     from app.blueprints.admin import bp as admin_bp
+    from app.blueprints.bethak import bp as bethak_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(communities_bp, url_prefix="/communities")
     app.register_blueprint(posts_bp, url_prefix="/posts")
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(bethak_bp, url_prefix="/bethak")
 
     @app.errorhandler(403)
     def forbidden(e):

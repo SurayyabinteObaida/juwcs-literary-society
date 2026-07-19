@@ -213,3 +213,73 @@ class SiteConstitution(db.Model):
     version = db.Column(db.Integer, nullable=False)
     body = db.Column(db.Text, nullable=False)
     published_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
+
+
+class BethakStatus(str, Enum):
+    OPEN = "open"
+    CLOSED = "closed"
+
+
+class BethakSession(db.Model):
+    """A single digital bethak thread — students volley shers/lines back and forth."""
+    __tablename__ = "bethak_sessions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(160), nullable=False)
+    topic = db.Column(db.String(160), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(20), nullable=False, default=BethakStatus.OPEN.value)
+    created_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
+
+    created_by = db.relationship("User")
+    entries = db.relationship(
+        "BethakEntry", back_populates="session",
+        cascade="all, delete-orphan", lazy="dynamic",
+        order_by="BethakEntry.created_at",
+    )
+
+    @property
+    def is_open(self):
+        return self.status == BethakStatus.OPEN.value
+
+    def __repr__(self):
+        return f"<BethakSession {self.id} {self.title!r}>"
+
+
+class BethakEntry(db.Model):
+    """One line/sher posted into a bethak session."""
+    __tablename__ = "bethak_entries"
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey("bethak_sessions.id"), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    text = db.Column(db.String(400), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
+
+    session = db.relationship("BethakSession", back_populates="entries")
+    author = db.relationship("User")
+    reactions = db.relationship(
+        "BethakReaction", back_populates="entry",
+        cascade="all, delete-orphan", lazy="dynamic",
+    )
+
+    def reaction_count(self, reaction_type):
+        return self.reactions.filter_by(type=reaction_type).count()
+
+
+class BethakReaction(db.Model):
+    __tablename__ = "bethak_reactions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    entry_id = db.Column(db.Integer, db.ForeignKey("bethak_entries.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    type = db.Column(db.String(20), nullable=False)  # like / report
+    created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
+
+    entry = db.relationship("BethakEntry", back_populates="reactions")
+    user = db.relationship("User")
+
+    __table_args__ = (
+        db.UniqueConstraint("entry_id", "user_id", "type", name="uq_one_bethak_reaction_per_user_per_type"),
+    )

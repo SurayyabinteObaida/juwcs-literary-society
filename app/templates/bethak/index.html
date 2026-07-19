@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Digital Bethak{% endblock %}
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <p class="eyebrow">مجلس &middot; گفتگو</p>
+    <p class="section-label" style="margin: 0;"><span>Digital Bethak</span></p>
+  </div>
+  {% if current_user.is_authenticated and current_user.is_admin %}
+    <a class="btn" href="{{ url_for('bethak.create') }}">Open a Bethak</a>
+  {% endif %}
+</div>
+
+<p style="color: var(--ink-soft); max-width: 620px; margin: 12px 0 40px;">
+  A running mehfil where the conversation never really ends — students trade
+  shers, lines, and replies, and everyone else gets to watch it unfold.
+</p>
+
+{% if sessions %}
+  <div class="community-list">
+    {% for s in sessions %}
+      <a class="community-row" href="{{ url_for('bethak.view', session_id=s.id) }}" style="text-decoration: none;">
+        <div class="community-row-main">
+          <h3>
+            {{ s.title }}
+            {% if not s.is_open %}<span class="tag" style="margin-left: 8px;">Closed</span>{% endif %}
+          </h3>
+          {% if s.topic %}<p style="margin: 0 0 6px; color: var(--ink-faint); font-size: 0.86rem;">Mazmoon: {{ s.topic }}</p>{% endif %}
+          <p>{{ s.entries.count() }} {{ "entry" if s.entries.count() == 1 else "entries" }} &middot; started {{ s.created_at.strftime('%d %b %Y') }}</p>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">No bethak has been opened yet.</div>
+{% endif %}
+
+{% endblock %}

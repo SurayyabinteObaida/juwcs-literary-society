@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Open a Bethak{% endblock %}
+{% block content %}
+
+<p class="section-label"><span>Open a Bethak</span></p>
+
+<form method="post" novalidate class="form-wrap">
+  {{ form.hidden_tag() }}
+
+  <div class="form-field">
+    {{ form.title.label }}
+    {{ form.title(placeholder="e.g. Monsoon Mehfil") }}
+    {% for e in form.title.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+
+  <div class="form-field">
+    {{ form.topic.label }}
+    {{ form.topic(placeholder="e.g. baarish, judaai, ummeed...") }}
+    {% for e in form.topic.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+
+  <div class="form-field">
+    {{ form.description.label }}
+    {{ form.description(placeholder="Any ground rules or context for this bethak.") }}
+    {% for e in form.description.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+
+  {{ form.submit(class="btn") }}
+  <a href="{{ url_for('bethak.index') }}" class="btn secondary">Cancel</a>
+</form>
+
+{% endblock %}
