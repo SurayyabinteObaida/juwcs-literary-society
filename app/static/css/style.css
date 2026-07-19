@@ -398,10 +398,12 @@ footer { background: var(--bg); }
 }
 .landing-eyebrow {
   text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  font-size: 0.74rem;
   color: var(--ink-faint);
-  margin: 0 0 22px;
+  margin: 0 auto 22px;
+  max-width: 480px;
+  line-height: 1.6;
 }
 .landing-title {
   font-family: var(--font-display);
