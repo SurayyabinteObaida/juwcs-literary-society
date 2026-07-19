@@ -27,6 +27,12 @@ def index():
     )
 
 
+@bp.route("/about")
+def about():
+    communities = Community.query.order_by(Community.name).all()
+    return render_template("main/landing.html", communities=communities)
+
+
 @bp.route("/leaderboard")
 def leaderboard():
     leaders = top_contributors(limit=25)

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}The Literary Society — JUW{% endblock %}
+{% block content %}
+
+<section class="landing-hero">
+  <p class="landing-eyebrow">Jinnah University for Women &middot; Est. 2021</p>
+  <h1 class="landing-title">The Literary<br>Society</h1>
+  <div class="landing-couplet" dir="rtl" lang="ur">
+    آتے ہیں غیب سے یہ مضامیں خیال میں<br>
+    غالبؔ صریرِ خامہ نوائے سروش ہے
+  </div>
+  <p class="landing-couplet-attrib">Mirza Ghalib &mdash; on where poetry comes from</p>
+</section>
+
+<section class="landing-mission">
+  <p class="landing-mission-text">
+    We are a home for students who read, write, and argue about both —
+    across genres, across languages, across the page. A space to put
+    unfinished work in front of other people who care about it as much
+    as you do.
+  </p>
+</section>
+
+<section class="landing-communities">
+  <p class="section-label"><span>Where to begin</span></p>
+  <div class="landing-community-list">
+    {% for c in communities %}
+      <a class="landing-community-row" href="{{ url_for('communities.detail', slug=c.slug) }}">
+        <span class="landing-community-name">{{ c.name }}</span>
+        <span class="landing-community-desc">{{ c.description }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="landing-cta">
+  {% if current_user.is_authenticated %}
+    <a href="{{ url_for('communities.index') }}" class="btn">Browse communities</a>
+  {% else %}
+    <a href="{{ url_for('auth.register') }}" class="btn">Request to join</a>
+    <a href="{{ url_for('main.constitution') }}" class="landing-cta-secondary">Read the constitution &rarr;</a>
+  {% endif %}
+</section>
+
+{% endblock %}
