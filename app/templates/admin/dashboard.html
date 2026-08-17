@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">System Control</p>
+      <h1>Admin Dashboard</h1>
+      <p class="page-head-desc">Members, editors, communities and content across the Society, at a glance.</p>
+    </div>
+    <div class="page-head-actions">
+      <a href="{{ url_for('admin.users') }}" class="btn secondary">Manage Users &amp; Editors</a>
+      <a href="{{ url_for('admin.content') }}" class="btn secondary">Browse All Content</a>
+      <a href="{{ url_for('editor.dashboard') }}" class="btn secondary">Open Editor Desk</a>
+    </div>
+  </div>
+
+  <div class="dash-stat-row" style="margin-bottom: 40px;">
+    <div class="dash-stat"><span class="ds-num">{{ stats.members }}</span><span class="ds-label">Members</span></div>
+    <div class="dash-stat"><span class="ds-num">{{ stats.editors }}</span><span class="ds-label">Editors</span></div>
+    <div class="dash-stat"><span class="ds-num">{{ stats.communities }}</span><span class="ds-label">Communities</span></div>
+    <div class="dash-stat"><span class="ds-num">{{ stats.pending_content }}</span><span class="ds-label">Pending Content</span></div>
+    <div class="dash-stat"><span class="ds-num">{{ stats.approved_content }}</span><span class="ds-label">Published</span></div>
+    <div class="dash-stat"><span class="ds-num">{{ stats.rejected_content }}</span><span class="ds-label">Rejected</span></div>
+  </div>
+
+  <p class="section-label"><span>Notification Testing</span></p>
+  <div class="lit-card" style="padding: 20px; margin-bottom: 40px; max-width: 520px;">
+    <p style="font-size: 0.85rem; color: var(--ink-soft); margin-top:0;">
+      Sends a push + in-app notification only to your own registered browsers/devices &mdash;
+      never broadcast to other members. Use this to confirm Firebase is wired up correctly
+      right after deployment.
+    </p>
+    <form method="post" action="{{ url_for('notifications.send_test') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-field" style="margin-bottom: 12px;">
+        <label for="test-notif-message">Message</label>
+        <input type="text" id="test-notif-message" name="message" value="Test notification from JUWCS" maxlength="500">
+      </div>
+      <button type="submit" class="btn secondary">Send Test Notification</button>
+    </form>
+  </div>
+
+  <p class="section-label"><span>Reported Posts</span></p>
+  {% if reported_posts %}
+    <table class="admin-table">
+      <thead><tr><th>Title</th><th>Author</th><th>Community</th><th>Reports</th><th></th></tr></thead>
+      <tbody>
+        {% for post in reported_posts %}
+          <tr>
+            <td><a href="{{ url_for('posts.view', post_id=post.id) }}">{{ post.title }}</a></td>
+            <td>{{ post.author.name }}</td>
+            <td>{{ post.community.name }}</td>
+            <td>{{ post.reaction_count('report') }}</td>
+            <td>
+              <div class="admin-actions">
+                <form method="post" action="{{ url_for('admin.remove_post', post_id=post.id) }}" class="inline-form">
+                  <button type="submit" class="btn danger small">Remove Post</button>
+                </form>
+                <form method="post" action="{{ url_for('admin.dismiss_reports', post_id=post.id) }}" class="inline-form">
+                  <button type="submit" class="btn secondary small">Dismiss Reports</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state-v2"><div class="es-icon">&#9873;</div><h3>No reported posts</h3><p>All clear.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

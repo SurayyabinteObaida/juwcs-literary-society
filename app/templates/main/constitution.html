@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Constitution | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">Constitution {% if doc %}&middot; v{{ doc.version }}{% endif %}</p>
+      <h1>Our Constitution</h1>
+      <p class="page-head-desc">The principles, rights and responsibilities that hold the Society together.</p>
+    </div>
+  </div>
+
+  {% if doc %}
+    <div class="constitution-shell">
+      <nav class="constitution-nav" id="constitution-nav" aria-label="Constitution sections"></nav>
+      <div class="constitution-body" id="constitution-body">{{ doc.body | markdown | safe }}</div>
+    </div>
+  {% else %}
+    <div class="empty-state-v2"><div class="es-icon">&#128220;</div><h3>Not published yet</h3><p>The constitution hasn't been published. Check back soon.</p></div>
+  {% endif %}
+</div>
+
+<script>
+  (function () {
+    var body = document.getElementById('constitution-body');
+    var nav = document.getElementById('constitution-nav');
+    if (!body || !nav) return;
+    var headings = body.querySelectorAll('h2, h3');
+    if (!headings.length) { nav.style.display = 'none'; return; }
+    headings.forEach(function (h, i) {
+      if (!h.id) h.id = 'section-' + i;
+      var a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      if (h.tagName === 'H3') a.style.paddingLeft = '22px';
+      nav.appendChild(a);
+    });
+    var links = nav.querySelectorAll('a');
+    var onScroll = function () {
+      var pos = window.scrollY + 110;
+      var current = null;
+      headings.forEach(function (h) { if (h.offsetTop <= pos) current = h; });
+      links.forEach(function (a) { a.classList.remove('active'); });
+      if (current) {
+        var match = nav.querySelector('a[href="#' + current.id + '"]');
+        if (match) match.classList.add('active');
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+{% endblock %}

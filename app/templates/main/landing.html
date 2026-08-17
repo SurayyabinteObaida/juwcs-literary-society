@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% block title %}The Literary Society — JUW{% endblock %}
+{% block main_class %}landing-main{% endblock %}
+{% block content %}
+
+<section class="hero-editorial">
+  <div class="hero-copy">
+    <p class="hero-eyebrow">JUW &middot; Department of Computer Science &amp; Software Engineering</p>
+    <p class="hero-urdu" dir="rtl" lang="ur">آتے ہیں غیب سے یہ مضامیں خیال میں</p>
+    <h1 class="hero-title">Where words<br><em>find a home.</em></h1>
+    <p class="hero-desc">A living space for readers, writers, poets, and curious minds — where unfinished ideas become conversations, and stories become memories.</p>
+    <div class="hero-actions">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('communities.index') }}" class="btn-editorial primary">Explore the Society &rarr;</a>
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn-editorial primary">Explore the Society &rarr;</a>
+      {% endif %}
+      <a href="{{ url_for('communities.index') }}" class="btn-editorial secondary">Share your writing +</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+<img src="{{ url_for('static', filename='assets/home 1.jpg') }}"
+     alt="An open notebook and pen on a writing desk">  </div>
+</section>
+
+<section class="hero-stats">
+  <div class="stat"><span class="stat-num">{{ '%02d' % stats.communities }}</span><span class="stat-label">Communities</span></div>
+  <div class="stat"><span class="stat-num">{{ '%02d' % stats.members }}</span><span class="stat-label">Members</span></div>
+  <div class="stat"><span class="stat-num">{{ '%02d' % stats.posts }}</span><span class="stat-label">Published Pieces</span></div>
+  <div class="stat"><span class="stat-num">{{ '%02d' % stats.events }}</span><span class="stat-label">Events</span></div>
+</section>
+
+<section class="edit-section">
+  <div class="section-head-row">
+    <div>
+      <span class="section-eyebrow">The page is alive</span>
+      <h2 class="section-heading">What's happening<br>this week.</h2>
+    </div>
+    <p class="section-sub">A curated front door into the society — discover the latest writing, conversations, events and voices worth your time.</p>
+  </div>
+
+  <div class="happening-grid">
+    <div class="happening-feature">
+<img src="{{  url_for('static', filename='assets/home 1.jpg')  }}" alt="" loading="lazy">      <div class="happening-feature-body">
+        {% if featured_post %}
+          <span class="happening-chip">Editor's Pick &middot; {{ featured_post.content_type_label }}</span>
+          <h3>{{ featured_post.title }}</h3>
+          <p>{{ featured_post.body | excerpt(160) }}</p>
+        {% else %}
+          <span class="happening-chip">The Literary Society</span>
+          <h3>New writing appears here every week.</h3>
+          <p>Once a member's piece is approved, it's featured right on this page.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="action-card-list">
+      <a class="action-card" href="{{ url_for('communities.index') }}">
+        <span class="action-card-icon" aria-hidden="true">&#9998;</span>
+        <h3>Write &amp; Submit</h3>
+        <p>Share your poetry, story, review, or reflection. Send it to the editorial desk for review.</p>
+        <span class="action-card-cta">Write &amp; Submit &rarr;</span>
+      </a>
+      <a class="action-card" href="{{ url_for('communities.index') }}">
+        <span class="action-card-icon" aria-hidden="true">&#9776;</span>
+        <h3>Join a Community</h3>
+        <p>Find your corner of the society — Poetry, Fiction, Urdu Adab, Reviews and more.</p>
+        <span class="action-card-cta">Explore Communities &rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="events-strip">
+  <div class="edit-section-bleed" style="max-width:1320px; margin:0 auto;">
+    <div class="section-head-row">
+      <div>
+        <span class="section-eyebrow">Mark your calendar</span>
+        <h2 class="section-heading">Upcoming events.</h2>
+      </div>
+      <p class="section-sub">From intimate poetry circles to open-mic evenings, there's always something happening here.</p>
+    </div>
+
+    {% if featured_event %}
+      <div class="events-layout">
+        <div class="event-featured-card">
+          <span class="event-featured-chip">Featured Event</span>
+          <div class="event-featured-date">
+            <span class="day">{{ featured_event.start_at.strftime('%d') }}</span>
+            <span class="month">{{ featured_event.start_at.strftime('%b') }}</span>
+          </div>
+          <h3>{{ featured_event.title }}</h3>
+          <p class="event-featured-meta">{{ featured_event.start_at.strftime('%A') }} &middot; {{ featured_event.start_at.strftime('%I:%M %p') }} &middot; {{ featured_event.venue }}</p>
+          <p class="event-featured-desc">{{ featured_event.description | excerpt(140) }}</p>
+          <a href="{{ url_for('events.detail', slug=featured_event.slug) }}" class="btn-editorial on-dark">View event details &nearr;</a>
+        </div>
+
+        <div class="event-row-list">
+          {% if other_events %}
+            {% for e in other_events %}
+              <a class="event-row" href="{{ url_for('events.detail', slug=e.slug) }}">
+                <div class="event-row-date">
+                  <span class="d">{{ e.start_at.strftime('%d') }}</span>
+                  <span class="m">{{ e.start_at.strftime('%b') }}</span>
+                </div>
+                <div class="event-row-body">
+                  <h4>{{ e.title }}</h4>
+                  <p class="event-row-meta">{{ e.category_label }} &middot; {{ e.start_at.strftime('%I:%M %p') }} &middot; {{ e.venue }}</p>
+                </div>
+                <span class="event-row-arrow" aria-hidden="true">&rarr;</span>
+              </a>
+            {% endfor %}
+          {% endif %}
+          <a class="event-row" href="{{ url_for('events.index') }}">
+            <div class="event-row-body">
+              <h4>See all upcoming events</h4>
+              <p class="event-row-meta">Full calendar &middot; Society events</p>
+            </div>
+            <span class="event-row-arrow" aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <div class="events-empty">No events on the calendar yet. Check back soon.</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="edit-section">
+  <div class="intro-split">
+    <div>
+      <span class="section-eyebrow">A society, not just a website</span>
+      <h2 class="section-heading">Read deeply.<br>Write freely.<br>Belong here.</h2>
+      <p class="section-sub" style="max-width: 560px; margin-bottom: 28px;">The Literary Society is a digital home for the JUW community — built around thoughtful reading, honest writing and meaningful conversation across languages and genres.</p>
+      <a href="{{ url_for('communities.index') }}" class="btn-editorial primary">Discover communities &rarr;</a>
+    </div>
+    <blockquote class="intro-quote">
+      &ldquo;A space to put unfinished work in front of other people who care about it as much as you do.&rdquo;
+      <cite>&mdash; The Literary Society, JUW</cite>
+    </blockquote>
+  </div>
+</section>
+
+<section class="edit-section">
+  <div class="section-head-row">
+    <div>
+      <span class="section-eyebrow">Find your corner</span>
+      <h2 class="section-heading">{{ '%02d' % stats.communities }} communit{{ 'y' if stats.communities == 1 else 'ies' }}.<br>Endless stories.</h2>
+    </div>
+    <a href="{{ url_for('communities.index') }}" class="see-all-link">View all communities &rarr;</a>
+  </div>
+
+  {% set community_images = [
+  'BookFilm.jpg',
+  'CNF.jpg',
+  'Fiction.jpg',
+  'poetry.jpg',
+  'SCIFI.jpg',
+  'UrduAdab.jpg'
+] %}
+
+{% if communities %}
+  <div class="community-grid">
+    {% for c in communities %}
+      <a class="community-card" href="{{ url_for('communities.detail', slug=c.slug) }}">
+
+        <div class="community-card-media">
+          <img
+            src="{{ url_for('static', filename='assets/' + community_images[loop.index0 % 6]) }}"
+            alt="{{ c.name }}"
+            loading="lazy"
+          >
+        </div>
+
+        <div class="community-card-body">
+          <h3>{{ c.name }}</h3>
+
+          <p>{{ c.description }}</p>
+
+          <div class="community-card-meta">
+            <span class="community-card-count">
+              {{ c.posts.filter_by(status='published', review_status='approved').count() }}
+              pieces shared
+            </span>
+
+            <span class="community-card-explore">
+              Explore &rarr;
+            </span>
+          </div>
+        </div>
+
+      </a>
+    {% endfor %}
+  </div>
+
+{% else %}
+
+  <div class="editorial-empty">
+    No communities yet — the first one is on its way.
+  </div>
+
+{% endif %}
+</section>
+
+<section class="edit-section">
+  <span class="section-eyebrow">Weekly highlight</span>
+  {% if weekly_highlight %}
+    <div class="highlight-feature">
+      <div class="highlight-feature-media">
+        <img src="{{ weekly_highlight.image.url }}" alt="{{ weekly_highlight.title }}">
+      </div>
+      <div class="highlight-feature-body">
+        <span class="gallery-card-cat">{{ weekly_highlight.category_label }}</span>
+        <h3>One piece.<br>One voice.<br>One reason to pause.</h3>
+        <p>{{ weekly_highlight.description }}</p>
+        <div class="highlight-contributor">
+          <span class="avatar">{{ weekly_highlight.display_contributor[:1] | upper }}</span>
+          <div>
+            <p class="highlight-contributor-name">{{ weekly_highlight.display_contributor }}</p>
+            <p class="highlight-contributor-meta">{{ weekly_highlight.category_label }} &middot; {{ weekly_highlight.published_at.strftime('%d %b %Y') if weekly_highlight.published_at else '' }}</p>
+          </div>
+        </div>
+        <div>
+          <a href="{{ url_for('main.highlight_detail', slug=weekly_highlight.slug) }}" class="btn-editorial secondary">Read the full piece &rarr;</a>
+          <a href="{{ url_for('main.highlights_gallery') }}" class="see-all-link" style="margin-left:16px;">Explore all &rarr;</a>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="editorial-empty">No weekly highlight published yet. Check back soon.</div>
+  {% endif %}
+</section>
+
+{% if featured_post %}
+<section class="edit-section">
+  <div class="feature-split">
+    <div class="feature-split-media">
+      <img src="{{ ('feature-' ~ featured_post.id) | stock_photo(700, 550) }}" alt="" loading="lazy">
+    </div>
+    <div>
+      <span class="section-eyebrow">Recently highlighted</span>
+      <h2 class="section-heading">One piece.<br>One voice.<br>One reason to pause.</h2>
+      <p class="section-sub" style="margin-bottom: 20px;">{{ featured_post.body | excerpt(180) }}</p>
+      <p style="color: var(--ink-faint); font-size: 0.86rem; margin-bottom: 22px;">By {{ featured_post.author.name }} &middot; {{ featured_post.community.name }}</p>
+      <a href="{{ url_for('posts.view', post_id=featured_post.id) }}" class="btn-editorial primary">Read the full piece &rarr;</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="quote-section">
+  <p class="quote-urdu" dir="rtl" lang="ur">بول کہ لب آزاد ہیں تیرے<br>بول زباں اب تک تیری ہے</p>
+  <p class="quote-attrib">Faiz Ahmed Faiz &mdash; from &ldquo;Bol&rdquo;</p>
+</section>
+
+<section class="final-cta">
+  <span class="section-eyebrow">Your page is waiting</span>
+  <h2>Every writer starts<br>with a first line.</h2>
+  <p>Join the society, discover your community, and put your words somewhere they can be heard.</p>
+  {% if current_user.is_authenticated %}
+    <a href="{{ url_for('communities.index') }}" class="btn-editorial on-dark">Explore the Society &rarr;</a>
+  {% else %}
+    <a href="{{ url_for('auth.register') }}" class="btn-editorial on-dark">Join The Literary Society +</a>
+  {% endif %}
+</section>
+
+{% endblock %}

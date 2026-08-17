@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Manage Users | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">System Control</p>
+      <h1>Users &amp; Editors</h1>
+      <p class="page-head-desc">Promote trusted members to Editor, or step in on accounts that need attention.</p>
+    </div>
+  </div>
+
+  <div class="filter-tabs">
+    <a href="{{ url_for('admin.users') }}" class="{{ 'active' if not role_filter else '' }}">All</a>
+    <a href="{{ url_for('admin.users', role='user') }}" class="{{ 'active' if role_filter == 'user' else '' }}">Members</a>
+    <a href="{{ url_for('admin.users', role='editor') }}" class="{{ 'active' if role_filter == 'editor' else '' }}">Editors</a>
+    <a href="{{ url_for('admin.users', role='admin') }}" class="{{ 'active' if role_filter == 'admin' else '' }}">Admins</a>
+  </div>
+
+  {% if users %}
+    <table class="admin-table">
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+          <tr>
+            <td><a href="{{ url_for('profile.view', username=u.username) if u.username else '#' }}">{{ u.name }}</a></td>
+            <td>{{ u.email }}</td>
+            <td><span class="nav-role-chip role-{{ u.role }}">{{ u.role_label }}</span></td>
+            <td>{{ u.status }}</td>
+            <td>{{ u.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <div class="admin-actions">
+                {% if u.role == 'user' %}
+                  <form method="post" action="{{ url_for('admin.make_editor', user_id=u.id) }}" class="inline-form">
+                    <button type="submit" class="btn secondary small">Make Editor</button>
+                  </form>
+                {% elif u.role == 'editor' %}
+                  <form method="post" action="{{ url_for('admin.remove_editor', user_id=u.id) }}" class="inline-form">
+                    <button type="submit" class="btn secondary small">Remove Editor Role</button>
+                  </form>
+                {% endif %}
+                {% if not u.is_admin %}
+                  {% if u.status == 'rejected' %}
+                    <form method="post" action="{{ url_for('admin.enable_user', user_id=u.id) }}" class="inline-form">
+                      <button type="submit" class="btn small">Re-enable</button>
+                    </form>
+                  {% else %}
+                    <form method="post" action="{{ url_for('admin.disable_user', user_id=u.id) }}" class="inline-form">
+                      <button type="submit" class="btn danger small">Disable</button>
+                    </form>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state-v2"><div class="es-icon">&#128100;</div><h3>No users found</h3><p></p></div>
+  {% endif %}
+</div>
+{% endblock %}

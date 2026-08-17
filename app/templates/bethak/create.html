@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Open a Bethak | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">Digital Bethak</p>
+      <h1>Open a Bethak</h1>
+    </div>
+  </div>
+
+  <div class="lit-card" style="max-width: 560px; padding: 28px;">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-field">
+        {{ form.title.label }}
+        {{ form.title(placeholder="e.g. Monsoon Mehfil") }}
+        {% for e in form.title.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="form-field">
+        {{ form.topic.label }}
+        {{ form.topic(placeholder="e.g. baarish, judaai, ummeed...") }}
+        {% for e in form.topic.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="form-field">
+        {{ form.description.label }}
+        {{ form.description(placeholder="Any ground rules or context for this bethak.") }}
+        {% for e in form.description.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="form-actions">
+        {{ form.submit(class="btn") }}
+        <a href="{{ url_for('bethak.index') }}" class="btn secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

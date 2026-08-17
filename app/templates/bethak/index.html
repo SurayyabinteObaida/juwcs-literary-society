@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Bethak | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">مجلس &middot; گفتگو</p>
+      <h1>Digital Bethak</h1>
+      <p class="page-head-desc">A running mehfil where the conversation never really ends &mdash; students trade shers, lines, and replies, and everyone else gets to watch it unfold.</p>
+    </div>
+    {% if current_user.is_authenticated and current_user.is_admin %}
+      <div class="page-head-actions">
+        <a class="btn" href="{{ url_for('bethak.create') }}">+ Open a Bethak</a>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if sessions %}
+    <div class="card-grid cols-2 stagger-in">
+      {% for s in sessions %}
+        <a class="lit-card hoverable" href="{{ url_for('bethak.view', session_id=s.id) }}" style="text-decoration:none; padding: 20px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h3 style="margin:0; flex:1;">{{ s.title }}</h3>
+            {% if not s.is_open %}<span class="pill">Closed</span>{% else %}<span class="pill" style="background: var(--success-bg); color: var(--teal);">Live</span>{% endif %}
+          </div>
+          {% if s.topic %}<p style="margin:0; color: var(--ink-faint); font-size: 0.86rem;">Mazmoon: {{ s.topic }}</p>{% endif %}
+          <p style="margin:0; color: var(--ink-soft); font-size: 0.88rem;">{{ s.entries.count() }} {{ "entry" if s.entries.count() == 1 else "entries" }} &middot; started {{ s.created_at.strftime('%d %b %Y') }}</p>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state-v2"><div class="es-icon">&#128172;</div><h3>No bethak has been opened yet</h3><p>Check back once the first mehfil begins.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

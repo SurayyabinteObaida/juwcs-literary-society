@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}All Content | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">System Control</p>
+      <h1>Content Overview</h1>
+      <p class="page-head-desc">Every submission across the Society, filterable by editorial status.</p>
+    </div>
+  </div>
+
+  <div class="filter-tabs">
+    <a href="{{ url_for('admin.content', status='pending') }}" class="{{ 'active' if status_filter == 'pending' else '' }}">Pending</a>
+    <a href="{{ url_for('admin.content', status='approved') }}" class="{{ 'active' if status_filter == 'approved' else '' }}">Approved</a>
+    <a href="{{ url_for('admin.content', status='rejected') }}" class="{{ 'active' if status_filter == 'rejected' else '' }}">Rejected</a>
+    <a href="{{ url_for('admin.content', status='draft') }}" class="{{ 'active' if status_filter == 'draft' else '' }}">Drafts</a>
+  </div>
+
+  {% if posts %}
+    <table class="admin-table">
+      <thead><tr><th>Title</th><th>Author</th><th>Type</th><th>Community</th><th>Status</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for post in posts %}
+          <tr>
+            <td><a href="{{ url_for('editor.review', post_id=post.id) }}">{{ post.title }}</a></td>
+            <td>{{ post.author.name }}</td>
+            <td>{{ post.content_type_label }}</td>
+            <td>{{ post.community.name }}</td>
+            <td><span class="status-badge status-{{ post.review_status }}">{{ post.review_status }}</span></td>
+            <td>{{ post.created_at.strftime('%d %b %Y') }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state-v2"><div class="es-icon">&#128203;</div><h3>Nothing in this category</h3><p></p></div>
+  {% endif %}
+</div>
+{% endblock %}

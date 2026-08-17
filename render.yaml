@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: literary-society
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "flask db upgrade && gunicorn wsgi:app"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: FLASK_APP
+        value: wsgi.py
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: FIREBASE_VAPID_PUBLIC_KEY
+        value: BCMVHss8Ms_9LLCwHRjilVQP8C9zQLq8lj-wkCNK4omfUMdtRgBzApoLYStAxzQuCI6sNxZuGaJT7Vo7t_NSHoM
+
+  # Sends 24h/1h event reminders. Runs as its own scheduled process — NOT
+  # in-process inside the web service's Gunicorn workers — so it fires
+  # exactly once per tick regardless of how many web workers/instances are
+  # running. `flask notify-event-reminders` is idempotent (NotificationDedupe
+  # guarantees at-most-once per event/user/window), so a missed or
+  # overlapping tick is harmless. See docs/FCM_NOTIFICATIONS.md.
+  - type: cron
+    name: literary-society-event-reminders
+    env: python
+    plan: free
+    schedule: "*/15 * * * *"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "flask notify-event-reminders"
+    envVars:
+      - key: SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: FLASK_APP
+        value: wsgi.py
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false

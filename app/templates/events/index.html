@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Events | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">Mark your calendar</p>
+      <h1>Upcoming Events</h1>
+      <p class="page-head-desc">From intimate poetry circles to open-mic evenings, there's always something happening here.</p>
+    </div>
+  </div>
+
+  {% if featured %}
+    <div class="lit-card" style="padding: 28px; margin-bottom: 44px; display:grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items:center;">
+      <div style="text-align:center;">
+        <span class="pill" style="margin-bottom:8px; display:inline-block;">Featured</span>
+        <div style="font-family: var(--font-display); font-size: 2.2rem; line-height:1;">{{ featured.start_at.strftime('%d') }}</div>
+        <div style="color: var(--ink-faint); text-transform:uppercase; font-size:0.78rem; letter-spacing:0.08em;">{{ featured.start_at.strftime('%b') }}</div>
+      </div>
+      <div>
+        <h3 style="margin: 0 0 6px;">{{ featured.title }}</h3>
+        <p style="color: var(--ink-soft); margin: 0 0 6px; font-size: 0.9rem;">{{ featured.start_at.strftime('%A') }} &middot; {{ featured.start_at.strftime('%I:%M %p') }} &middot; {{ featured.venue }}</p>
+        <p style="color: var(--ink-soft); margin: 0;">{{ featured.description | excerpt(180) }}</p>
+      </div>
+      <a href="{{ url_for('events.detail', slug=featured.slug) }}" class="btn">View details &rarr;</a>
+    </div>
+  {% endif %}
+
+  <p class="section-label"><span>All Upcoming Events</span></p>
+  {% if events %}
+    <div class="card-grid stagger-in">
+      {% for e in events %}
+        <a class="lit-card hoverable" href="{{ url_for('events.detail', slug=e.slug) }}" style="text-decoration:none; padding: 20px; display:flex; gap: 16px; align-items:center;">
+          <div style="text-align:center; flex-shrink:0; width:52px;">
+            <div style="font-family: var(--font-display); font-size: 1.5rem; color: var(--ink);">{{ e.start_at.strftime('%d') }}</div>
+            <div style="color: var(--ink-faint); text-transform:uppercase; font-size:0.7rem;">{{ e.start_at.strftime('%b') }}</div>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <h4 style="margin:0 0 4px; color: var(--ink);">{{ e.title }}</h4>
+            <p style="margin:0; color: var(--ink-soft); font-size: 0.84rem;">{{ e.category_label }} &middot; {{ e.start_at.strftime('%I:%M %p') }} &middot; {{ e.venue }}</p>
+          </div>
+          <span style="color: var(--ink-faint);" aria-hidden="true">&rarr;</span>
+        </a>
+      {% endfor %}
+    </div>
+  {% elif not featured %}
+    <div class="empty-state-v2"><div class="es-icon">&#128197;</div><h3>No events on the calendar yet</h3><p>Check back soon.</p></div>
+  {% else %}
+    <p style="color: var(--ink-faint);">No further events scheduled right now.</p>
+  {% endif %}
+
+  {% if past %}
+    <p class="section-label" style="margin-top: 44px;"><span>Past Events</span></p>
+    <div class="card-grid">
+      {% for e in past %}
+        <a class="lit-card" href="{{ url_for('events.detail', slug=e.slug) }}" style="text-decoration:none; padding: 20px; display:flex; gap: 16px; align-items:center; opacity: 0.65;">
+          <div style="text-align:center; flex-shrink:0; width:52px;">
+            <div style="font-family: var(--font-display); font-size: 1.5rem;">{{ e.start_at.strftime('%d') }}</div>
+            <div style="color: var(--ink-faint); text-transform:uppercase; font-size:0.7rem;">{{ e.start_at.strftime('%b') }}</div>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <h4 style="margin:0 0 4px; color: var(--ink);">{{ e.title }}</h4>
+            <p style="margin:0; color: var(--ink-soft); font-size: 0.84rem;">{{ e.category_label }} &middot; {{ e.venue }}</p>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

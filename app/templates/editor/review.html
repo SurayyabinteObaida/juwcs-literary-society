@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Review: {{ post.title }} | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+<a href="{{ url_for('editor.dashboard') }}" style="font-size: 0.85rem; color: var(--ink-faint);">&larr; Back to Editor Dashboard</a>
+
+<div class="read-width" style="max-width: 720px; margin: 24px auto 0;">
+  <p class="read-meta-row">
+    <span class="content-type-chip">{{ post.content_type_label }}</span>
+    <span class="accent-dot">&middot;</span>{{ post.community.name }}
+    <span class="accent-dot">&middot;</span><span class="status-badge status-{{ post.review_status }}">{{ post.review_status }}</span>
+  </p>
+  <h1 style="font-size: 2rem;">{{ post.title }}</h1>
+  <p class="by-sub">by {{ post.author.name }} &middot; submitted {{ post.submitted_at.strftime('%d %b %Y') if post.submitted_at else '—' }}</p>
+
+  <ul class="lit-timeline" style="max-width: 480px; margin: 24px 0;">
+    <li class="done"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Draft</p></li>
+    <li class="done"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Submitted</p><p class="tl-meta">{{ post.submitted_at.strftime('%d %b %Y') if post.submitted_at else '—' }}</p></li>
+    <li class="{{ 'current' if post.review_status in ('pending','rejected') else 'done' }}"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Editor Review</p>{% if post.rejection_reason %}<p class="tl-note"><strong>Previous feedback:</strong> {{ post.rejection_reason }}</p>{% endif %}</li>
+    <li class="{{ 'done' if post.review_status == 'approved' else '' }}"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Approved &amp; Published</p>{% if post.review_status == 'approved' %}<p class="tl-meta">{{ post.reviewed_at.strftime('%d %b %Y') if post.reviewed_at else '' }} by {{ post.reviewed_by.name if post.reviewed_by else 'an editor' }}</p>{% endif %}</li>
+  </ul>
+
+  <div class="reading-body {{ 'poetry-body' if post.content_type in ['poetry', 'shayari'] else ('story-body' if post.content_type == 'article' else 'blog-body') }}">{{ post.body }}</div>
+
+  {% if post.review_status in ('pending', 'rejected') %}
+    <div class="lit-card" style="margin-top: 32px; padding: 24px;">
+      <h3 style="font-size: 1.05rem; margin-top:0;">Editorial Decision</h3>
+      <form method="post" action="{{ url_for('editor.approve', post_id=post.id) }}" style="margin: 16px 0;">
+        <button type="submit" class="btn">Approve &amp; Publish</button>
+      </form>
+      {% if post.review_status == 'pending' %}
+        <form method="post" action="{{ url_for('editor.request_changes', post_id=post.id) }}" style="margin: 16px 0;">
+          <div class="form-field">
+            <label for="changes-reason">Request changes (author stays in the queue, gets notified)</label>
+            <textarea id="changes-reason" name="reason" rows="3" placeholder="What should the author revise before this is ready?"></textarea>
+          </div>
+          <button type="submit" class="btn secondary">Request Changes</button>
+        </form>
+      {% endif %}
+      <form method="post" action="{{ url_for('editor.reject', post_id=post.id) }}">
+        <div class="form-field">
+          <label for="reason">Rejection reason / feedback for the author</label>
+          <textarea id="reason" name="reason" rows="4" placeholder="Explain what needs revision before this can be approved..."></textarea>
+        </div>
+        <button type="submit" class="btn danger">Reject with Feedback</button>
+      </form>
+    </div>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

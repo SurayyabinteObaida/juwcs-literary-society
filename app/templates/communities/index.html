@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Communities | The Literary Society{% endblock %}
+
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">Find your corner</p>
+      <h1>Communities</h1>
+      <p class="page-head-desc">
+        Every genre, every language, every voice has a home here.
+        Pick a community and start reading &mdash; or writing.
+      </p>
+    </div>
+  </div>
+
+  {% set community_images = [
+    'BookFilm.jpg',
+  'CNF.jpg',
+  'Fiction.jpg',
+  'poetry.jpg',
+  'SCIFI.jpg',
+  'UrduAdab.jpg'
+  ] %}
+
+  {% if communities %}
+    <div class="card-grid stagger-in">
+      {% for c in communities %}
+
+        <a class="lit-card hoverable entity-card"
+           href="{{ url_for('communities.detail', slug=c.slug) }}"
+           style="text-decoration:none;">
+
+          <div class="entity-card-media">
+            <img
+              src="{{ url_for('static', filename='assets/' + community_images[loop.index0 % 6]) }}"
+              alt="{{ c.name }}"
+              loading="lazy"
+            >
+
+            <span class="entity-card-chip">
+              {{ c.posts.filter_by(status='published', review_status='approved').count() }} pieces
+            </span>
+          </div>
+
+          
+
+          <div class="entity-card-body">
+            <h3>{{ c.name }}</h3>
+
+            <p class="entity-desc">
+              {{ c.description }}
+            </p>
+
+            {% if c.categories %}
+              <div class="tag-row" style="margin-bottom: 14px;">
+                {% for cat in c.categories[:3] %}
+                  <span class="tag">{{ cat.label }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="entity-card-meta-row">
+              <span>Open community</span>
+              <span class="entity-card-cta">
+                Explore &rarr;
+              </span>
+            </div>
+          </div>
+
+        </a>
+
+      {% endfor %}
+    </div>
+
+  {% else %}
+
+    <div class="empty-state-v2">
+      <div class="es-icon">&#9776;</div>
+      <h3>No communities yet</h3>
+      <p>The first one is on its way.</p>
+    </div>
+
+  {% endif %}
+</div>
+{% endblock %}

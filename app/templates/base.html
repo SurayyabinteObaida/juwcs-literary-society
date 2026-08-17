@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en" data-theme="{% block theme_override %}{{ current_user.display_theme if current_user.is_authenticated else DEFAULT_THEME }}{% endblock %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}The Literary Society{% endblock %}</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <meta name="theme-color" content="#0E756D">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <header class="site-header" id="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="{{ url_for('main.index') }}">
+        <span class="brand-mark" aria-hidden="true">L</span>
+        <span class="brand-text">
+          <span class="brand-name">The Literary Society</span>
+          <span class="brand-sub">JUW &middot; Dept. of CS &amp; Software Engineering</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="site-nav">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="primary-nav" id="site-nav">
+        <div class="primary-nav-links">
+          <a href="{{ url_for('main.index') }}" class="{{ 'active' if request.endpoint == 'main.index' else '' }}">Home</a>
+          <a href="{{ url_for('main.feed') }}" class="{{ 'active' if request.endpoint == 'main.feed' else '' }}">Feed</a>
+          <a href="{{ url_for('main.highlights_gallery') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('main.highlight') else '' }}">Highlights</a>
+          <a href="{{ url_for('events.index') }}" class="{{ 'active' if request.blueprint == 'events' else '' }}">Events</a>
+          <a href="{{ url_for('communities.index') }}" class="{{ 'active' if request.blueprint == 'communities' else '' }}">Communities</a>
+          <a href="{{ url_for('bethak.index') }}" class="{{ 'active' if request.blueprint == 'bethak' else '' }}">Bethak</a>
+          <a href="{{ url_for('main.constitution') }}" class="{{ 'active' if request.endpoint == 'main.constitution' else '' }}">About</a>
+        </div>
+
+        <div class="primary-nav-actions">
+          <button type="button" class="theme-toggle" id="theme-toggle" aria-haspopup="dialog" aria-expanded="false" aria-controls="theme-panel" title="Customize theme">
+            <span class="swatch-dot" aria-hidden="true"></span>
+            <span class="theme-toggle-label">Customize</span>
+          </button>
+          {% if current_user.is_authenticated %}
+            <button type="button" class="notif-bell" id="notif-bell-toggle" aria-haspopup="dialog" aria-expanded="false" aria-controls="notif-panel" title="Notifications">
+              <span aria-hidden="true">&#128276;</span>
+              <span class="notif-badge" id="notif-badge">{{ unread_notifications_count }}</span>
+            </button>
+          {% endif %}
+          {% if current_user.is_authenticated %}
+            {% if current_user.is_editor_or_admin %}
+              <a href="{{ url_for('editor.dashboard') }}" class="nav-role-link {{ 'active' if request.blueprint == 'editor' else '' }}">Editor Desk</a>
+            {% endif %}
+            {% if current_user.is_admin %}
+              <a href="{{ url_for('admin.dashboard') }}" class="nav-role-link {{ 'active' if request.blueprint == 'admin' else '' }}">Admin</a>
+            {% endif %}
+
+            <div class="nav-account">
+              <a href="{{ url_for('profile.me') }}" class="nav-avatar-link {{ 'active' if request.blueprint == 'profile' else '' }}">
+                <span class="avatar avatar-sm">
+                  {% if current_user.avatar_url %}
+                    <img src="{{ current_user.avatar_url }}" alt="">
+                  {% else %}
+                    {{ current_user.name[:1] | upper }}
+                  {% endif %}
+                </span>
+                <span class="nav-account-name">{{ current_user.name.split(' ')[0] }}</span>
+              </a>
+              <a href="{{ url_for('auth.logout') }}" class="nav-logout">Log Out</a>
+            </div>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}" class="nav-login">Log In</a>
+            <a href="{{ url_for('auth.register') }}" class="nav-join">Join the Society &nearr;</a>
+          {% endif %}
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="theme-panel-backdrop" id="theme-panel-backdrop"></div>
+  <div class="theme-panel" id="theme-panel" role="dialog" aria-modal="true" aria-labelledby="theme-panel-title">
+    <button type="button" class="theme-panel-close" id="theme-panel-close" aria-label="Close theme picker">&times;</button>
+    <h4 id="theme-panel-title">Choose Your Theme</h4>
+    <p class="theme-panel-sub">Applies instantly across the whole Society.</p>
+    <div class="theme-grid" id="theme-grid" role="radiogroup" aria-label="Theme">
+      {% for value, label in THEME_CHOICES %}
+        <button type="button" class="theme-option tp-{{ value }}" data-theme-value="{{ value }}" role="radio"
+                aria-checked="{{ 'true' if (current_user.display_theme if current_user.is_authenticated else DEFAULT_THEME) == value else 'false' }}">
+          <span class="theme-swatch-preview" aria-hidden="true">
+            <span class="sw-bg"></span><span class="sw-accent"></span><span class="sw-ink"></span>
+          </span>
+          <span class="theme-opt-label">{{ label }}</span>
+          <span class="theme-opt-check" aria-hidden="true">&#10003;</span>
+        </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if current_user.is_authenticated %}
+  <div class="notif-panel" id="notif-panel" role="dialog" aria-modal="false" aria-labelledby="notif-panel-title">
+    <div class="notif-panel-head">
+      <h4 id="notif-panel-title">Notifications</h4>
+      <button type="button" class="notif-mark-all" id="notif-mark-all-read">Mark all as read</button>
+    </div>
+    <div class="notif-list" id="notif-list">
+      <div class="notif-empty">Loading…</div>
+    </div>
+    <div class="notif-panel-foot">
+      <a href="{{ url_for('notifications.preferences') }}">Notification preferences</a>
+    </div>
+  </div>
+  {% endif %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flashes">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main id="main-content" class="{% block main_class %}shell{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div class="footer-col footer-about">
+        <p class="brand-name footer-brand">The Literary Society</p>
+        <p class="footer-desc">A digital home for JUW's readers, writers, poets and curious minds &mdash; built around thoughtful reading, honest writing and meaningful conversation.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <a href="{{ url_for('main.feed') }}">Feed</a>
+        <a href="{{ url_for('main.highlights_gallery') }}">Highlights</a>
+        <a href="{{ url_for('events.index') }}">Events</a>
+        <a href="{{ url_for('communities.index') }}">Communities</a>
+        <a href="{{ url_for('bethak.index') }}">Bethak</a>
+      </div>
+      <div class="footer-col">
+        <h4>Participate</h4>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('communities.index') }}">Share your writing</a>
+        {% else %}
+          <a href="{{ url_for('auth.register') }}">Join the Society</a>
+        {% endif %}
+        <a href="{{ url_for('communities.index') }}">Explore Communities</a>
+        <a href="{{ url_for('main.leaderboard') }}">Top Contributors</a>
+        <a href="{{ url_for('main.constitution') }}">Constitution</a>
+      </div>
+      <div class="footer-col">
+        <h4>Personalize</h4>
+        {% if current_user.is_authenticated %}
+          <form method="post" action="{{ url_for('profile.theme') }}" class="footer-theme-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="footer-theme-select" class="footer-theme-label">Theme</label>
+            <select id="footer-theme-select" name="theme" onchange="this.form.submit()">
+              {% for value, label in THEME_CHOICES %}
+                <option value="{{ value }}" {{ 'selected' if current_user.display_theme == value else '' }}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}">Log in</a>
+          <a href="{{ url_for('auth.register') }}">Create an account</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="site-footer-bottom">
+      <span>&copy; 2026 The Literary Society &middot; JUW</span>
+      <span>Made for readers, writers &amp; dreamers.</span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var toggle = document.getElementById('nav-toggle');
+      var nav = document.getElementById('site-nav');
+      if (toggle && nav) {
+        toggle.addEventListener('click', function () {
+          var open = nav.classList.toggle('open');
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      }
+
+      var header = document.getElementById('site-header');
+      if (header) {
+        var onScroll = function () {
+          if (window.scrollY > 12) header.classList.add('is-compact');
+          else header.classList.remove('is-compact');
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+      }
+    })();
+  </script>
+
+  <script>
+    /* ---------------------------------------------------------------------
+       Theme engine: five palettes, switched instantly via [data-theme] on
+       <html>. Guests persist their pick in localStorage; signed-in members
+       persist it to their account (profile.theme) via a background request
+       so the whole Society — feed, communities, Bethak, profile, settings —
+       stays in sync without a page reload. A guest pick is carried into the
+       account automatically the moment they log in or sign up (see the
+       theme_pref hidden field on the auth forms).
+       --------------------------------------------------------------------- */
+    (function () {
+      var STORAGE_KEY = 'juwcs-theme';
+      var isAuthenticated = {{ 'true' if current_user.is_authenticated else 'false' }};
+      var root = document.documentElement;
+
+      function currentTheme() {
+        return root.getAttribute('data-theme');
+      }
+
+      function applyTheme(value, opts) {
+        opts = opts || {};
+        root.setAttribute('data-theme', value);
+        try { localStorage.setItem(STORAGE_KEY, value); } catch (e) {}
+        document.querySelectorAll('.theme-option').forEach(function (btn) {
+          var selected = btn.getAttribute('data-theme-value') === value;
+          btn.classList.toggle('selected', selected);
+          btn.setAttribute('aria-checked', selected ? 'true' : 'false');
+        });
+        if (opts.persist && isAuthenticated) {
+          var form = new FormData();
+          form.append('theme', value);
+          form.append('csrf_token', '{{ csrf_token() }}');
+          fetch('{{ url_for("profile.theme") }}', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: form,
+          }).catch(function () {});
+        }
+      }
+
+      // On load: a guest who picked a theme before logging in gets it
+      // synced onto their fresh account automatically.
+      if (isAuthenticated) {
+        try {
+          var pending = localStorage.getItem(STORAGE_KEY);
+          var serverTheme = '{{ current_user.display_theme if current_user.is_authenticated else "" }}';
+          if (pending && pending !== serverTheme) {
+            applyTheme(pending, { persist: true });
+          }
+        } catch (e) {}
+      } else {
+        try {
+          var saved = localStorage.getItem(STORAGE_KEY);
+          if (saved && saved !== currentTheme()) applyTheme(saved, { persist: false });
+        } catch (e) {}
+      }
+
+      var toggle = document.getElementById('theme-toggle');
+      var panel = document.getElementById('theme-panel');
+      var backdrop = document.getElementById('theme-panel-backdrop');
+      var closeBtn = document.getElementById('theme-panel-close');
+
+      function openPanel() {
+        panel.classList.add('open');
+        backdrop.classList.add('open');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+      function closePanel() {
+        panel.classList.remove('open');
+        backdrop.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+
+      if (toggle && panel) {
+        toggle.addEventListener('click', function () {
+          panel.classList.contains('open') ? closePanel() : openPanel();
+        });
+        closeBtn.addEventListener('click', closePanel);
+        backdrop.addEventListener('click', closePanel);
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') closePanel();
+        });
+        document.querySelectorAll('.theme-option').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            applyTheme(btn.getAttribute('data-theme-value'), { persist: true });
+          });
+        });
+      }
+    })();
+  </script>
+  {% if current_user.is_authenticated %}
+    <div class="notif-prompt" id="notif-prompt" role="dialog" aria-modal="true" aria-labelledby="notif-prompt-title">
+      <div class="notif-prompt-card">
+        <p class="notif-prompt-icon" aria-hidden="true">&#128276;</p>
+        <h4 id="notif-prompt-title">Stay Connected with JUWCS</h4>
+        <p class="notif-prompt-sub">Get notified about:</p>
+        <ul class="notif-prompt-list">
+          <li>Upcoming literary events</li>
+          <li>Digital Bethak openings</li>
+          <li>Your submission updates</li>
+          <li>Event reminders</li>
+          <li>New literary publications</li>
+        </ul>
+        <div class="notif-prompt-actions">
+          <button type="button" class="btn" id="notif-prompt-enable">Enable Notifications</button>
+          <button type="button" class="btn secondary" id="notif-prompt-later">Maybe Later</button>
+        </div>
+      </div>
+    </div>
+    <div class="notif-toast-container" id="notif-toast-container" aria-live="polite"></div>
+  {% endif %}
+
+  {% block extra_scripts %}{% endblock %}
+
+  {% if current_user.is_authenticated %}
+    <script>window.JUWCS_USER_AUTHENTICATED = true;</script>
+    <script type="module" src="{{ url_for('static', filename='js/firebase-init.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+  {% endif %}
+</body>
+</html>

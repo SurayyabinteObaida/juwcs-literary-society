@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Editor Dashboard | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">Editorial Desk</p>
+      <h1>Editor Dashboard</h1>
+      <p class="page-head-desc">Review member submissions before they go public. Approve to publish, or reject with feedback so the author can revise and resubmit.</p>
+    </div>
+  </div>
+
+  <div class="dash-stat-row" style="margin: 0 0 36px;">
+    <div class="dash-stat"><span class="ds-num">{{ stats.pending }}</span><span class="ds-label">Pending</span></div>
+    <div class="dash-stat"><span class="ds-num">{{ stats.published_pieces }}</span><span class="ds-label">Published</span></div>
+    <div class="dash-stat"><span class="ds-num">{{ stats.upcoming_events }}</span><span class="ds-label">Upcoming Events</span></div>
+    <div class="dash-stat"><span class="ds-num">{{ stats.event_registrations }}</span><span class="ds-label">Registrations</span></div>
+    <div class="dash-stat"><span class="ds-num">{{ stats.highlights }}</span><span class="ds-label">Highlights</span></div>
+  </div>
+
+  <div class="editor-quick-actions">
+    <a href="{{ url_for('editor.event_new') }}" class="btn secondary small">+ Create Event</a>
+    <a href="{{ url_for('editor.highlight_new') }}" class="btn secondary small">+ Add Weekly Highlight</a>
+    <a href="{{ url_for('editor.events_index') }}" class="btn secondary small">Manage Events</a>
+    <a href="{{ url_for('editor.highlights_index') }}" class="btn secondary small">Manage Highlights</a>
+  </div>
+
+  <div class="lit-tabs" role="tablist">
+    <button type="button" class="active" data-tab="queue" role="tab" aria-selected="true">Submission Queue &middot; {{ pending | length }}</button>
+    <button type="button" data-tab="reviewed" role="tab" aria-selected="false">Recently Reviewed</button>
+    <button type="button" data-tab="events" role="tab" aria-selected="false">Upcoming Events</button>
+  </div>
+
+  <div class="tab-panel" data-panel="queue">
+    {% if pending %}
+      <div class="stagger-in">
+        {% for post in pending %}
+          <div class="submission-card" style="margin-bottom: 14px; align-items: flex-start;">
+            <div class="sc-icon" aria-hidden="true">&#9998;</div>
+            <div class="sc-body">
+              <p class="sc-meta" style="margin-bottom: 4px;">
+                <span class="content-type-chip">{{ post.content_type_label }}</span>
+                <span class="accent-dot">&middot;</span>{{ post.community.name }}
+                <span class="accent-dot">&middot;</span>submitted {{ post.submitted_at.strftime('%d %b %Y') if post.submitted_at else '' }}
+              </p>
+              <p class="sc-title" style="font-size: 1.05rem;"><a href="{{ url_for('editor.review', post_id=post.id) }}">{{ post.title }}</a></p>
+              <p class="sc-meta">by {{ post.author.name }} &middot; @{{ post.author.username or post.author.id }}</p>
+              <p style="color: var(--ink-soft); max-width: 640px; margin: 8px 0 0; font-size: 0.9rem;">{{ post.body[:200] }}{% if post.body|length > 200 %}&hellip;{% endif %}</p>
+              <div class="admin-actions" style="margin-top: 12px;">
+                <a href="{{ url_for('editor.review', post_id=post.id) }}" class="btn secondary small">Read Full Submission</a>
+                <form method="post" action="{{ url_for('editor.approve', post_id=post.id) }}" class="inline-form">
+                  <button type="submit" class="btn small">Approve &amp; Publish</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state-v2"><div class="es-icon">&#10003;</div><h3>All caught up</h3><p>No pending submissions right now.</p></div>
+    {% endif %}
+  </div>
+
+  <div class="tab-panel" data-panel="reviewed" hidden>
+    {% if recently_reviewed %}
+      <table class="admin-table">
+        <thead><tr><th>Title</th><th>Author</th><th>Status</th><th>Reviewed</th></tr></thead>
+        <tbody>
+          {% for post in recently_reviewed %}
+            <tr>
+              <td><a href="{{ url_for('editor.review', post_id=post.id) }}">{{ post.title }}</a></td>
+              <td>{{ post.author.name }}</td>
+              <td><span class="status-badge status-{{ post.review_status }}">{{ post.review_status }}</span></td>
+              <td>{{ post.reviewed_at.strftime('%d %b %Y') if post.reviewed_at else '—' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state-v2"><div class="es-icon">&#128203;</div><h3>Nothing reviewed yet</h3><p></p></div>
+    {% endif %}
+  </div>
+
+  <div class="tab-panel" data-panel="events" hidden>
+    {% if upcoming_events %}
+      <div class="editor-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Event</th><th>Date</th><th>Registrations</th><th>Capacity</th></tr></thead>
+          <tbody>
+            {% for e in upcoming_events %}
+              <tr>
+                <td><a href="{{ url_for('editor.event_registrations', event_id=e.id) }}">{{ e.title }}</a></td>
+                <td>{{ e.start_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                <td>{{ e.confirmed_registration_count }}</td>
+                <td>{{ e.capacity if e.capacity else 'Unlimited' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state-v2"><div class="es-icon">&#128197;</div><h3>No upcoming events</h3><p></p></div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  (function () {
+    var tabs = document.querySelectorAll('.lit-tabs [data-tab]');
+    var panels = document.querySelectorAll('.tab-panel[data-panel]');
+    tabs.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        tabs.forEach(function (b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        panels.forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== btn.getAttribute('data-tab'); });
+      });
+    });
+  })();
+</script>
+{% endblock %}

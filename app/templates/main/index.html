@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}The Literary Society{% endblock %}
+{% block content %}
+
+<div class="page-grid">
+  <div>
+
+    {% if featured_post %}
+      <section class="hero">
+        <p class="eyebrow">Latest from {{ featured_post.community.name }}</p>
+        <h1 class="hero-title"><a href="{{ url_for('posts.view', post_id=featured_post.id) }}">{{ featured_post.title }}</a></h1>
+        <p class="hero-excerpt">{{ featured_post.body | excerpt(260) }}</p>
+        <p class="hero-byline">
+          by {{ featured_post.author.name }}<span class="accent-dot">&#183;</span>{{ featured_post.created_at.strftime('%d %b %Y') }}
+        </p>
+      </section>
+    {% endif %}
+
+    <p class="section-label">
+      <span>Recent writing</span>
+      <a class="see-all" href="{{ url_for('communities.index') }}">Browse communities &rarr;</a>
+    </p>
+    {% if feed_posts %}
+      {% for post in feed_posts %}
+        <article class="post-entry">
+          <p class="dateline">
+            {{ post.community.name }}<span class="accent-dot">&#183;</span>{{ post.created_at.strftime('%d %b %Y') }}
+          </p>
+          <h3 class="post-title"><a href="{{ url_for('posts.view', post_id=post.id) }}">{{ post.title }}</a></h3>
+          <p class="post-author">by {{ post.author.name }}</p>
+        </article>
+      {% endfor %}
+    {% elif not featured_post %}
+      <div class="empty-state">No posts yet — be the first to share something.</div>
+    {% else %}
+      <p style="color: var(--ink-faint); font-size: 0.9rem;">That's everything for now.</p>
+    {% endif %}
+  </div>
+
+  <aside>
+    <div class="sidebar-block">
+      <h3>Top contributors</h3>
+      {% if leaders %}
+        <ul class="sidebar-list">
+          {% for l in leaders %}
+            <li><span class="sidebar-rank">{{ loop.index }}</span>{{ l.name }} &middot; {{ l.post_count }} posts</li>
+          {% endfor %}
+        </ul>
+        <p style="margin-top: 14px; font-size: 0.85rem;"><a href="{{ url_for('main.leaderboard') }}">Full leaderboard &rarr;</a></p>
+      {% else %}
+        <p style="font-size: 0.88rem; color: var(--ink-faint);">No contributions yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="sidebar-block">
+      <h3>Communities</h3>
+      <ul class="sidebar-list">
+        {% for c in communities %}
+          <li><a href="{{ url_for('communities.detail', slug=c.slug) }}">{{ c.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+</div>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+<div class="read-width" style="max-width: 720px; margin: 0 auto;">
+
+<div class="read-hero">
+  <p class="read-meta-row">
+    <span class="content-type-chip">{{ post.content_type_label }}</span>
+    <span class="accent-dot">&#183;</span>
+    <a href="{{ url_for('communities.detail', slug=post.community.slug) }}">{{ post.community.name }}</a>
+    <span class="accent-dot">&#183;</span><span class="rt">&#128337; {{ post.created_at.strftime('%d %b %Y') }}</span>
+    {% for cat in post.categories %}<span class="accent-dot">&#183;</span>{{ cat.label }}{% endfor %}
+    {% if not post.is_public %}
+      <span class="accent-dot">&#183;</span>
+      <span class="status-badge status-{{ post.review_status }}">{{ post.review_status }}</span>
+    {% endif %}
+  </p>
+  <h1>{{ post.title }}</h1>
+</div>
+
+<div class="byline-card">
+  <span class="avatar">
+    {% if post.author.avatar_url %}<img src="{{ post.author.avatar_url }}" alt="">{% else %}{{ post.author.name[:1] | upper }}{% endif %}
+  </span>
+  <div>
+    <p class="by-name"><a href="{{ url_for('profile.view', username=post.author.username) if post.author.username else '#' }}">{{ post.author.name }}</a></p>
+    <p class="by-sub">{{ post.community.name }} &middot; {{ post.created_at.strftime('%d %b %Y') }}</p>
+  </div>
+</div>
+
+{% if not post.is_public and current_user.is_authenticated and current_user.id == post.author_id %}
+  <div class="lit-card" style="padding: 18px 20px; margin-bottom: 28px;">
+    <p style="font-weight:700; font-size: 0.85rem; text-transform:uppercase; letter-spacing:0.05em; color: var(--ink-faint); margin: 0 0 12px;">Submission status</p>
+    <ul class="lit-timeline">
+      <li class="done"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Submitted</p><p class="tl-meta">{{ post.submitted_at.strftime('%d %b %Y') if post.submitted_at else '—' }}</p></li>
+      {% if post.review_status == 'pending' %}
+        <li class="current"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Editor Review</p><p class="tl-note">This submission is waiting for an Editor's review &mdash; only you can see it right now.</p></li>
+      {% elif post.review_status == 'rejected' %}
+        <li class="rejected"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Revision Requested</p><p class="tl-note"><strong>Editor feedback:</strong> {{ post.rejection_reason or 'No reason provided.' }}</p>
+          <a href="{{ url_for('posts.edit', post_id=post.id) }}" class="btn small" style="margin-top:10px;">Revise &amp; Resubmit</a>
+        </li>
+      {% elif post.review_status == 'approved' %}
+        <li class="done"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Approved</p><p class="tl-meta">{{ post.reviewed_at.strftime('%d %b %Y') if post.reviewed_at else '' }}</p></li>
+        <li class="current"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Published</p></li>
+      {% endif %}
+    </ul>
+  </div>
+{% endif %}
+
+<div class="reading-body {{ 'poetry-body' if post.content_type in ['poetry', 'shayari'] else ('story-body' if post.content_type == 'article' else 'blog-body') }}">{{ post.body }}</div>
+
+{% if post.is_public %}
+<div class="icon-action-bar">
+  {% if current_user.is_authenticated and current_user.is_approved and current_user.id != post.author_id %}
+    <form method="post" action="{{ url_for('posts.react', post_id=post.id, reaction_type='like') }}" class="inline-form">
+      <button type="submit" class="icon-action like-pop {{ 'active' if user_has_liked else '' }}">
+        {% if user_has_liked %}♥{% else %}♡{% endif %} {{ 'Liked' if user_has_liked else 'Like' }} &middot; {{ like_count }}
+      </button>
+    </form>
+    <form method="post" action="{{ url_for('posts.react', post_id=post.id, reaction_type='report') }}" class="inline-form">
+      <button type="submit" class="icon-action report {{ 'active' if user_has_reported else '' }}">
+        &#9873; {{ 'Reported' if user_has_reported else 'Report' }}
+      </button>
+    </form>
+  {% else %}
+    <span class="icon-action" style="cursor:default;">♡ {{ like_count }} likes</span>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if post.is_public %}
+<section style="margin-top: 20px;">
+  <p class="section-label"><span>Comments &middot; {{ post.comments.count() }}</span></p>
+
+  {% if current_user.is_authenticated and current_user.is_approved %}
+    <form method="post" style="margin-bottom: 28px;">
+      {{ comment_form.hidden_tag() }}
+      <div class="form-field">
+        {{ comment_form.body(placeholder="Share your thoughts...", maxlength=500) }}
+        {% for e in comment_form.body.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+      </div>
+      {{ comment_form.submit(class="btn") }}
+    </form>
+  {% elif not current_user.is_authenticated %}
+    <p style="color: var(--ink-faint); font-size: 0.9rem;">
+      <a href="{{ url_for('auth.login') }}">Log in</a> to comment.
+    </p>
+  {% endif %}
+
+  {% set comment_list = post.comments.all() %}
+  {% if comment_list %}
+    <div class="stagger-in">
+      {% for c in comment_list %}
+        <div class="comment">
+          <p class="comment-meta">{{ c.author.name }} &middot; {{ c.created_at.strftime('%d %b %Y') }}</p>
+          <p>{{ c.body }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p style="color: var(--ink-faint); font-size: 0.9rem;">No comments yet.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+</div>
+</div>
+
+<script>
+  document.querySelectorAll('.icon-action.like-pop').forEach(function (btn) {
+    btn.addEventListener('click', function () { btn.classList.add('is-liking'); });
+  });
+</script>
+{% endblock %}

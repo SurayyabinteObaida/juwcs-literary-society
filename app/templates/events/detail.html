@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }} | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+
+{% if event.cover_image %}
+  <div class="entity-hero">
+    <img src="{{ event.cover_image.url }}" alt="{{ event.title }}">
+    <div class="entity-hero-overlay"></div>
+  </div>
+  <div style="height: 40px;"></div>
+{% endif %}
+
+<p class="content-type-chip">{{ event.category_label }}</p>
+<h1 style="margin-top: 10px;">{{ event.title }}</h1>
+{% if event.is_cancelled %}
+  <p class="status-badge status-rejected" style="margin: 10px 0 20px;">Cancelled</p>
+{% endif %}
+
+<div class="event-detail-grid" style="margin-top: 32px;">
+  <div>
+    <p style="color: var(--ink-soft); font-size: 1.02rem; line-height: 1.7; max-width: 640px;">{{ event.description }}</p>
+
+    <p class="section-label"><span>Details</span></p>
+    <ul class="lit-timeline" style="max-width:520px;">
+      <li class="done"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Date &amp; Time</p><p class="tl-meta">{{ event.start_at.strftime('%A, %d %B %Y') }} &middot; {{ event.start_at.strftime('%I:%M %p') }}{% if event.end_at %} &ndash; {{ event.end_at.strftime('%I:%M %p') }}{% endif %}</p></li>
+      <li class="done"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Venue</p><p class="tl-meta">{{ event.venue }}</p></li>
+      {% if event.organizer %}<li class="done"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Organizer</p><p class="tl-meta">{{ event.organizer }}</p></li>{% endif %}
+      {% if event.capacity %}<li class="done"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Capacity</p><p class="tl-meta">{{ event.capacity }} seats</p></li>{% endif %}
+      {% if event.registration_deadline %}<li class="{{ 'done' if event.registration_closed else 'current' }}"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Registration Deadline</p><p class="tl-meta">{{ event.registration_deadline.strftime('%d %b %Y, %I:%M %p') }}</p></li>{% endif %}
+      {% if current_user.is_authenticated and current_user.is_editor_or_admin %}
+        <li class="current"><span class="tl-dot" aria-hidden="true"></span><p class="tl-title">Registered</p><p class="tl-meta">{{ event.confirmed_registration_count }}{% if event.capacity %} / {{ event.capacity }}{% endif %}</p></li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <aside class="registration-panel lit-card" style="padding: 24px;">
+    <h3>Registration</h3>
+    {% if event.is_cancelled %}
+      <span class="registration-status-pill cancelled">Event Cancelled</span>
+      <p style="color: var(--ink-soft); font-size: 0.9rem;">This event will not take place.</p>
+    {% elif my_registration %}
+      <span class="registration-status-pill open">You're registered</span>
+      <p style="color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 16px;">Reference <strong>{{ my_registration.reference }}</strong></p>
+      <a href="{{ url_for('events.confirmation', slug=event.slug, reference=my_registration.reference) }}" class="btn secondary" style="width:100%; text-align:center; display:block; margin-bottom: 10px;">View confirmation</a>
+      <form method="post" action="{{ url_for('events.cancel_registration', slug=event.slug) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn danger small" style="width:100%;">Cancel registration</button>
+      </form>
+    {% elif event.registration_closed %}
+      <span class="registration-status-pill closed">Registration Closed</span>
+    {% elif event.is_full %}
+      <span class="registration-status-pill full">Registration Full</span>
+    {% elif not event.is_published %}
+      <span class="registration-status-pill closed">Draft &mdash; Not Yet Published</span>
+    {% else %}
+      <span class="registration-status-pill open">
+        {% if event.capacity %}{{ event.seats_remaining }} seats remaining{% else %}Open registration{% endif %}
+      </span>
+      {% if current_user.is_authenticated %}
+        <form method="post" action="{{ url_for('events.register', slug=event.slug) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn" style="width:100%;">Register for Event</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('auth.login', next=request.path) }}" class="btn" style="width:100%; text-align:center; display:block;">Log in to register</a>
+      {% endif %}
+    {% endif %}
+  </aside>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ highlight.title }} | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+
+<a href="{{ url_for('main.highlights_gallery') }}" style="font-size: 0.86rem; color: var(--ink-faint);">&larr; Back to Highlights</a>
+
+<div class="highlight-feature" style="margin-top: 24px;">
+  <div class="highlight-feature-media">
+    <img src="{{ highlight.image.url }}" alt="{{ highlight.title }}">
+  </div>
+  <div class="highlight-feature-body">
+    <span class="gallery-card-cat">{{ highlight.category_label }}</span>
+    <h3>{{ highlight.title }}</h3>
+    <p>{{ highlight.description }}</p>
+    <div class="highlight-contributor">
+      <span class="avatar">{{ highlight.display_contributor[:1] | upper }}</span>
+      <div>
+        <p class="highlight-contributor-name">{{ highlight.display_contributor }}</p>
+        <p class="highlight-contributor-meta">{{ highlight.published_at.strftime('%d %b %Y') if highlight.published_at else '' }}</p>
+      </div>
+    </div>
+    {% if highlight.related_post %}
+      <a href="{{ url_for('posts.view', post_id=highlight.related_post.id) }}" class="btn-editorial primary">Read the full piece &rarr;</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if highlight.editorial_note %}
+  <div class="intro-quote" style="margin-top: 32px; max-width: 700px;">
+    {{ highlight.editorial_note }}
+    <cite>&mdash; Editor's Note</cite>
+  </div>
+{% endif %}
+</div>
+{% endblock %}

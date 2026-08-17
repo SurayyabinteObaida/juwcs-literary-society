@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Weekly Highlights | Editor Desk</div>
+{% endblock %}
+{% block content %}
+<div class="app-shell">
+<p class="eyebrow">Editorial Desk</p>
+<h1>Weekly Highlights</h1>
+<p style="color: var(--ink-soft); max-width: 620px; margin: 14px 0 28px;">
+  Feature the writing that deserves a second look. Highlights appear on the landing page and in the public gallery once published.
+</p>
+
+<div class="editor-quick-actions">
+  <a href="{{ url_for('editor.highlight_new') }}" class="btn">+ Add Weekly Highlight</a>
+  <a href="{{ url_for('editor.dashboard') }}" class="btn secondary">&larr; Back to Dashboard</a>
+</div>
+
+{% if highlights %}
+  <div class="editor-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Title</th><th>Category</th><th>Contributor</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for h in highlights %}
+          <tr>
+            <td><a href="{{ url_for('editor.highlight_edit', highlight_id=h.id) }}">{{ h.title }}</a></td>
+            <td>{{ h.category_label }}</td>
+            <td>{{ h.display_contributor }}</td>
+            <td>
+              {% if h.published %}<span class="status-badge status-approved">published</span>
+              {% else %}<span class="status-badge status-draft">draft</span>{% endif %}
+            </td>
+            <td>
+              <div class="admin-actions">
+                <a href="{{ url_for('editor.highlight_edit', highlight_id=h.id) }}" class="btn secondary small">Edit</a>
+                {% if h.published %}
+                  <form method="post" action="{{ url_for('editor.highlight_unpublish', highlight_id=h.id) }}" class="inline-form">
+                    <button type="submit" class="btn secondary small">Unpublish</button>
+                  </form>
+                {% endif %}
+                <form method="post" action="{{ url_for('editor.highlight_delete', highlight_id=h.id) }}" class="inline-form" onsubmit="return confirm('Delete this highlight permanently?');">
+                  <button type="submit" class="btn danger small">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty-state-v2"><div class="es-icon">&#128203;</div><h3>No highlights added yet.</h3><p></p></div>
+{% endif %}
+{% endblock %}
