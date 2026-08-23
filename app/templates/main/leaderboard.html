@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Top Contributors | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">Recognition</p>
+      <h1>Top Contributors</h1>
+      <p class="page-head-desc">Ranked by published pieces, likes received, and community standing.</p>
+    </div>
+  </div>
+
+  {% if leaders %}
+    <div class="podium">
+      {% for l in leaders[:3] %}
+        <div class="podium-slot rank-{{ loop.index }}">
+          <span class="podium-rank">#{{ loop.index }}</span>
+          <div class="podium-avatar">{{ l.name[:1] | upper }}</div>
+          <p class="podium-name">{{ l.name }}</p>
+          <p class="podium-pts">{{ l.post_count }} posts &middot; {{ l.likes_received }} likes</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="lit-card" style="padding: 8px 16px;">
+      <div class="rank-list">
+        {% for l in leaders %}
+          <div class="rank-row">
+            <span class="rr-rank">{{ loop.index }}</span>
+            <span class="rr-avatar">{{ l.name[:1] | upper }}</span>
+            <span class="rr-name">{{ l.name }}</span>
+            <span class="rr-meta">
+              <span>{{ l.post_count }} posts</span>
+              <span>{{ l.likes_received }} likes</span>
+              <span>{{ l.reports_received }} reports</span>
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <div class="empty-state-v2"><div class="es-icon">&#127942;</div><h3>No contributions yet</h3><p>The leaderboard fills in as members publish and get liked.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

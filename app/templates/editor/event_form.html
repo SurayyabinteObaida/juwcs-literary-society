@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Event' if event else 'Create Event' }} | Editor Desk</div>
+{% endblock %}
+{% block content %}
+<div class="app-shell">
+<div class="form-wrap" style="max-width: 760px;">
+<p class="eyebrow">Editorial Desk</p>
+<h1>{{ 'Edit Event' if event else 'Add Event' }}</h1>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+  {{ form.hidden_tag() }}
+
+  <div class="form-field">
+    <label for="event-cover-input">Cover image</label>
+    <label class="upload-dropzone" id="event-dropzone" for="event-cover-input">
+      <div class="upload-dropzone-icon" aria-hidden="true">&#8593;</div>
+      <div class="upload-dropzone-text">Drag &amp; drop an image, or click to choose from your computer</div>
+      <div class="upload-dropzone-hint">JPG, PNG or WEBP &middot; up to 5MB</div>
+      {{ form.cover_image(id="event-cover-input") }}
+    </label>
+    <div class="upload-preview" id="event-cover-preview">
+      <img id="event-cover-preview-img" src="" alt="">
+    </div>
+    {% if event and event.cover_image %}
+      <p class="form-hint">Current image on file — upload a new one to replace it.</p>
+    {% endif %}
+    {% for e in form.cover_image.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+
+  <div class="editorial-form-grid">
+    <div class="form-field full">
+      {{ form.title.label }}
+      {{ form.title(placeholder="Poetry Recital — An Evening of Unspoken Things") }}
+      {% for e in form.title.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="form-field">
+      {{ form.category.label }}
+      {{ form.category() }}
+    </div>
+    <div class="form-field">
+      {{ form.venue.label }}
+      {{ form.venue(placeholder="JUW Campus") }}
+      {% for e in form.venue.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="form-field full">
+      {{ form.description.label }}
+      {{ form.description(rows=6, placeholder="What should attendees expect?") }}
+      {% for e in form.description.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="form-field">
+      {{ form.start_at.label }}
+      {{ form.start_at(type="datetime-local") }}
+      {% for e in form.start_at.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="form-field">
+      {{ form.end_at.label }}
+      {{ form.end_at(type="datetime-local") }}
+    </div>
+
+    <div class="form-field">
+      {{ form.registration_deadline.label }}
+      {{ form.registration_deadline(type="datetime-local") }}
+    </div>
+    <div class="form-field">
+      {{ form.capacity.label }}
+      {{ form.capacity(placeholder="Leave blank for unlimited") }}
+    </div>
+
+    <div class="form-field">
+      {{ form.organizer.label }}
+      {{ form.organizer(placeholder="The Literary Society") }}
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label style="display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0;">
+      {{ form.publish() }} {{ form.publish.label.text }}
+    </label>
+  </div>
+
+  <div class="form-actions">
+    {{ form.submit(class="btn") }}
+    <a href="{{ url_for('editor.events_index') }}" class="btn secondary">Cancel</a>
+  </div>
+</form>
+</div>
+
+<script>
+  (function () {
+    var input = document.getElementById('event-cover-input');
+    var preview = document.getElementById('event-cover-preview');
+    var img = document.getElementById('event-cover-preview-img');
+    var zone = document.getElementById('event-dropzone');
+    if (!input) return;
+    input.addEventListener('change', function () {
+      if (input.files && input.files[0]) {
+        img.src = URL.createObjectURL(input.files[0]);
+        preview.style.display = 'block';
+      }
+    });
+    ['dragenter', 'dragover'].forEach(function (evt) {
+      zone.addEventListener(evt, function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (evt) {
+      zone.addEventListener(evt, function (e) { e.preventDefault(); zone.classList.remove('drag-over'); });
+    });
+    zone.addEventListener('drop', function (e) {
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        input.files = e.dataTransfer.files;
+        input.dispatchEvent(new Event('change'));
+      }
+    });
+  })();
+</script>
+{% endblock %}

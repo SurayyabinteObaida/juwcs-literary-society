@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Not Found | The Literary Society{% endblock %}
+{% block main_class %}auth-shell{% endblock %}
+{% block content %}
+<div class="auth-card" style="text-align:center;">
+  <p class="auth-eyebrow">404</p>
+  <h1 style="font-size: 2.2rem;">Page not found</h1>
+  <p class="auth-sub">That page doesn't exist &mdash; it may have been moved, or the link might be off.</p>
+  <a href="{{ url_for('main.index') }}" class="btn" style="width:100%;">Back home</a>
+</div>
+{% endblock %}

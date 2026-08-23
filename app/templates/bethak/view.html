@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{{ session.title }} | Bethak | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+<div class="read-width" style="max-width: 720px; margin: 0 auto;">
+
+  <p class="page-eyebrow">مجلس</p>
+  <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px;">
+    <h1 style="margin-bottom: 4px;">{{ session.title }}</h1>
+    {% if current_user.is_authenticated and current_user.is_admin %}
+      {% if session.is_open %}
+        <form method="post" action="{{ url_for('bethak.close', session_id=session.id) }}" class="inline-form">
+          <button type="submit" class="btn secondary" style="padding: 6px 14px; font-size: 0.82rem;">Close bethak</button>
+        </form>
+      {% else %}
+        <form method="post" action="{{ url_for('bethak.reopen', session_id=session.id) }}" class="inline-form">
+          <button type="submit" class="btn secondary" style="padding: 6px 14px; font-size: 0.82rem;">Reopen</button>
+        </form>
+      {% endif %}
+    {% endif %}
+  </div>
+  {% if session.topic %}<p style="color: var(--ink-faint); font-size: 0.9rem; margin: 0 0 8px;">Mazmoon: {{ session.topic }}</p>{% endif %}
+  {% if session.description %}<p style="color: var(--ink-soft); margin: 0 0 8px;">{{ session.description }}</p>{% endif %}
+  <p style="color: var(--ink-faint); font-size: 0.84rem;">
+    opened by {{ session.created_by.name }} &middot; {{ session.created_at.strftime('%d %b %Y') }}
+    {% if not session.is_open %}<span class="pill" style="margin-left: 6px;">Closed</span>{% endif %}
+  </p>
+
+  <div class="bethak-thread stagger-in">
+    {% if entries %}
+      {% for entry in entries %}
+        <div class="bethak-entry">
+          <p class="bethak-entry-text">{{ entry.text }}</p>
+          <div class="bethak-entry-meta">
+            <span>{{ entry.author.name }}</span>
+            <span>{{ entry.created_at.strftime('%d %b, %I:%M %p') }}</span>
+            {% if current_user.is_authenticated and current_user.is_approved and current_user.id != entry.author_id %}
+              <form method="post" action="{{ url_for('bethak.react', session_id=session.id, entry_id=entry.id, reaction_type='like') }}" class="inline-form">
+                <button type="submit" class="bethak-react like-pop {{ 'active' if entry.id in user_liked_ids else '' }}">
+                  &hearts; {{ entry.reaction_count('like') }}
+                </button>
+              </form>
+            {% elif entry.reaction_count('like') %}
+              <span>&hearts; {{ entry.reaction_count('like') }}</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state-v2"><div class="es-icon">&#128172;</div><h3>No one has opened the mehfil yet</h3><p>Be the first.</p></div>
+    {% endif %}
+  </div>
+
+  {% if session.is_open %}
+    {% if current_user.is_authenticated and current_user.is_approved %}
+      <form method="post" class="bethak-compose">
+        {{ entry_form.hidden_tag() }}
+        {{ entry_form.text(placeholder="Continue the bethak\u2026", maxlength=400, rows=2) }}
+        {% for e in entry_form.text.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+        {{ entry_form.submit(class="btn") }}
+      </form>
+    {% elif not current_user.is_authenticated %}
+      <p style="color: var(--ink-faint); font-size: 0.9rem; margin-top: 24px;">
+        <a href="{{ url_for('auth.login') }}">Log in</a> to join the bethak.
+      </p>
+    {% endif %}
+  {% else %}
+    <p style="color: var(--ink-faint); font-size: 0.9rem; margin-top: 24px;">This bethak is closed to new entries.</p>
+  {% endif %}
+
+</div>
+</div>
+
+<script>
+  document.querySelectorAll('.bethak-react').forEach(function (btn) {
+    btn.addEventListener('click', function () { btn.classList.add('is-liking'); });
+  });
+</script>
+{% endblock %}

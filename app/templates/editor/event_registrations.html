@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Registrations — {{ event.title }} | Editor Desk</div>
+{% endblock %}
+{% block content %}
+<div class="app-shell">
+<a href="{{ url_for('editor.events_index') }}" style="font-size: 0.86rem; color: var(--ink-faint);">&larr; Back to Events</a>
+
+<p class="eyebrow" style="margin-top: 18px;">Event Registrations</p>
+<h1>{{ event.title }}</h1>
+
+<div class="editor-registration-summary">
+  <div>
+    <span class="num">{{ event.confirmed_registration_count }}</span>
+    <div class="label">Registered</div>
+  </div>
+  {% if event.capacity %}
+    <div>
+      <span class="num">{{ event.seats_remaining }}</span>
+      <div class="label">Seats Remaining</div>
+    </div>
+    <div>
+      <span class="num">{{ event.capacity }}</span>
+      <div class="label">Capacity</div>
+    </div>
+  {% else %}
+    <div>
+      <span class="num">&infin;</span>
+      <div class="label">Unlimited Capacity</div>
+    </div>
+  {% endif %}
+</div>
+
+{% if registrations %}
+  <div class="editor-table-wrap">
+    <div class="table-scroll">
+<table class="admin-table">
+      <thead>
+        <tr><th>Full Name</th><th>Username</th><th>Email</th><th>Registered</th><th>Reference</th></tr>
+      </thead>
+      <tbody>
+        {% for r in registrations %}
+          <tr>
+            <td>{{ r.user.name }}</td>
+            <td>{{ r.user.username }}</td>
+            <td>{{ r.user.email }}</td>
+            <td>{{ r.registered_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+            <td>{{ r.reference }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+</div>
+  </div>
+{% else %}
+  <div class="empty-state-v2"><div class="es-icon">&#128203;</div><h3>No registrations yet.</h3><p></p></div>
+{% endif %}
+{% endblock %}

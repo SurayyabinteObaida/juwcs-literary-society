@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Weekly Highlights | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">Editor's Picks</p>
+      <h1>Weekly Highlights</h1>
+      <p class="page-head-desc">Discover the writing that stayed with us this week &mdash; a running archive of pieces our editorial team chose to feature.</p>
+    </div>
+  </div>
+
+  {% if highlights %}
+    <div class="card-grid stagger-in">
+      {% for h in highlights %}
+        <a class="lit-card hoverable entity-card" href="{{ url_for('main.highlight_detail', slug=h.slug) }}" style="text-decoration:none;">
+          <div class="entity-card-media">
+            <img src="{{ h.image.url }}" alt="{{ h.title }}" loading="lazy">
+            <span class="entity-card-chip">{{ h.category_label }}</span>
+          </div>
+          <div class="entity-card-body" style="padding-top: 18px;">
+            <h3>{{ h.title }}</h3>
+            <p class="entity-desc">{{ h.description | excerpt(120) }}</p>
+            <div class="entity-card-meta-row">
+              <span>{{ h.display_contributor }}</span>
+              <span>{{ h.published_at.strftime('%d %b %Y') if h.published_at else '' }}</span>
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state-v2"><div class="es-icon">&#11088;</div><h3>No highlights yet</h3><p>Check back soon.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

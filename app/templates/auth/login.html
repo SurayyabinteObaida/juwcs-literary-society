@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Log In | The Literary Society{% endblock %}
+{% block main_class %}auth-shell{% endblock %}
+{% block content %}
+
+<div class="auth-card">
+  <p class="auth-eyebrow">Welcome Back</p>
+  <h1>Log in to the Society</h1>
+  <p class="auth-sub">Pick up right where you left off &mdash; your feed, communities and drafts are waiting.</p>
+
+  <div class="oauth-row" role="group" aria-label="Continue with a provider">
+    <button type="button" class="oauth-btn" aria-disabled="true" title="Coming soon" disabled>
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.03l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+    <button type="button" class="oauth-btn" aria-disabled="true" title="Coming soon" disabled>
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .3a12 12 0 0 0-3.8 23.38c.6.1.83-.26.83-.58v-2.02c-3.34.73-4.04-1.6-4.04-1.6-.55-1.4-1.33-1.77-1.33-1.77-1.09-.74.08-.73.08-.73 1.2.09 1.83 1.24 1.83 1.24 1.07 1.82 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.58A12 12 0 0 0 12 .3z"/></svg>
+      Continue with GitHub
+    </button>
+  </div>
+  <div class="auth-divider">or with your email</div>
+
+  <form method="post" novalidate id="login-form">
+    {{ form.hidden_tag() }}
+    {{ form.theme_pref() }}
+    <div class="form-field">
+      {{ form.email.label }}
+      {{ form.email(placeholder="you@example.com", autocomplete="email") }}
+      {% for e in form.email.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="form-field field-with-icon">
+      {{ form.password.label }}
+      {{ form.password(placeholder="Your password", autocomplete="current-password", id="login-password") }}
+      <button type="button" class="field-toggle-visibility" data-toggle-for="login-password">Show</button>
+      {% for e in form.password.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="remember-row">
+      <label>{{ form.remember_me() }} Remember me</label>
+      <a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a>
+    </div>
+
+    {{ form.submit(class="btn", style="width:100%;") }}
+  </form>
+
+  <p style="margin-top: 20px; font-size: 0.88rem; text-align:center; color: var(--ink-soft);">
+    New here? <a href="{{ url_for('auth.register') }}">Create an account</a> &mdash; no approval needed, you're in right away.
+  </p>
+</div>
+
+<script>
+  (function () {
+    document.querySelectorAll('.field-toggle-visibility').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var input = document.getElementById(btn.getAttribute('data-toggle-for'));
+        if (!input) return;
+        var isPw = input.type === 'password';
+        input.type = isPw ? 'text' : 'password';
+        btn.textContent = isPw ? 'Hide' : 'Show';
+      });
+    });
+    var form = document.getElementById('login-form');
+    var pref = form ? form.querySelector('input[name="theme_pref"]') : null;
+    if (pref) {
+      try {
+        var saved = localStorage.getItem('juwcs-theme');
+        if (saved) pref.value = saved;
+      } catch (e) {}
+    }
+  })();
+</script>
+{% endblock %}

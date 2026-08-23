@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}You're Registered | The Literary Society{% endblock %}
+{% block main_class %}auth-shell{% endblock %}
+{% block content %}
+
+<div class="auth-card confirmation-card" style="text-align:center;">
+  <div class="confirmation-check" aria-hidden="true">&#10003;</div>
+  <h1 style="font-size: 1.8rem;">You're registered.</h1>
+  <p style="color: var(--ink-soft);">Your place for <strong>{{ event.title }}</strong> is confirmed.</p>
+
+  <ul class="confirmation-details">
+    <li><span>Event</span><span>{{ event.title }}</span></li>
+    <li><span>Date</span><span>{{ event.start_at.strftime('%d %B %Y') }}</span></li>
+    <li><span>Time</span><span>{{ event.start_at.strftime('%I:%M %p') }}</span></li>
+    <li><span>Venue</span><span>{{ event.venue }}</span></li>
+    <li><span>Reference</span><span>{{ registration.reference }}</span></li>
+    <li><span>Registered as</span><span>{{ registration.user.name }}</span></li>
+    <li><span>Confirmed</span><span>{{ registration.registered_at.strftime('%d %b %Y, %I:%M %p') }}</span></li>
+  </ul>
+
+  <div class="form-actions" style="justify-content: center; margin-top: 28px;">
+    <a href="data:text/calendar;charset=utf8,BEGIN%3AVCALENDAR%0AVERSION%3A2.0%0ABEGIN%3AVEVENT%0ASUMMARY%3A{{ event.title | urlencode }}%0ADTSTART%3A{{ event.start_at.strftime('%Y%m%dT%H%M%S') }}%0ALOCATION%3A{{ event.venue | urlencode }}%0AEND%3AVEVENT%0AEND%3AVCALENDAR"
+       download="{{ event.slug }}.ics" class="btn secondary">Add to Calendar</a>
+    <a href="{{ url_for('events.detail', slug=event.slug) }}" class="btn">View Event Details</a>
+  </div>
+</div>
+{% endblock %}

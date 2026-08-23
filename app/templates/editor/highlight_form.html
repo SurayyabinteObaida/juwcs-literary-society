@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Highlight' if highlight else 'Add Weekly Highlight' }} | Editor Desk</div>
+{% endblock %}
+{% block content %}
+<div class="app-shell">
+<div class="form-wrap" style="max-width: 760px;">
+<p class="eyebrow">Editorial Desk</p>
+<h1>{{ 'Edit Highlight' if highlight else 'Add Weekly Highlight' }}</h1>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+  {{ form.hidden_tag() }}
+
+  <div class="form-field">
+    <label for="highlight-image-input">Image {{ '' if highlight else '(required)' }}</label>
+    <label class="upload-dropzone" id="highlight-dropzone" for="highlight-image-input">
+      <div class="upload-dropzone-icon" aria-hidden="true">&#8593;</div>
+      <div class="upload-dropzone-text">Drag &amp; drop an image, or click to choose from your computer</div>
+      <div class="upload-dropzone-hint">JPG, PNG or WEBP &middot; up to 5MB</div>
+      {{ form.image(id="highlight-image-input") }}
+    </label>
+    <div class="upload-preview" id="highlight-image-preview">
+      <img id="highlight-image-preview-img" src="{% if highlight and highlight.image %}{{ highlight.image.url }}{% endif %}" alt="">
+    </div>
+    {% if highlight %}<p class="form-hint">Upload a new image to replace the current one.</p>{% endif %}
+    {% for e in form.image.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+  </div>
+
+  <div class="editorial-form-grid">
+    <div class="form-field full">
+      {{ form.title.label }}
+      {{ form.title(placeholder="The things we never say aloud") }}
+      {% for e in form.title.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="form-field">
+      {{ form.category.label }}
+      {{ form.category() }}
+    </div>
+    <div class="form-field">
+      {{ form.contributor_name.label }}
+      {{ form.contributor_name(placeholder="Contributor's name") }}
+    </div>
+
+    <div class="form-field full">
+      {{ form.description.label }}
+      {{ form.description(rows=4, placeholder="A short editorial description of the piece.") }}
+      {% for e in form.description.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="form-field full">
+      {{ form.editorial_note.label }}
+      {{ form.editorial_note(rows=3, placeholder="Optional note from the editorial desk.") }}
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label style="display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0;">
+      {{ form.publish() }} {{ form.publish.label.text }}
+    </label>
+  </div>
+
+  <div class="form-actions">
+    {{ form.submit(class="btn") }}
+    <a href="{{ url_for('editor.highlights_index') }}" class="btn secondary">Cancel</a>
+  </div>
+</form>
+</div>
+
+<script>
+  (function () {
+    var input = document.getElementById('highlight-image-input');
+    var preview = document.getElementById('highlight-image-preview');
+    var img = document.getElementById('highlight-image-preview-img');
+    var zone = document.getElementById('highlight-dropzone');
+    if (!input) return;
+    if (img.src && img.getAttribute('src')) { preview.style.display = 'block'; }
+    input.addEventListener('change', function () {
+      if (input.files && input.files[0]) {
+        img.src = URL.createObjectURL(input.files[0]);
+        preview.style.display = 'block';
+      }
+    });
+    ['dragenter', 'dragover'].forEach(function (evt) {
+      zone.addEventListener(evt, function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (evt) {
+      zone.addEventListener(evt, function (e) { e.preventDefault(); zone.classList.remove('drag-over'); });
+    });
+    zone.addEventListener('drop', function (e) {
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        input.files = e.dataTransfer.files;
+        input.dispatchEvent(new Event('change'));
+      }
+    });
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Notifications | Settings | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">Settings</p>
+      <h1>Notification Preferences</h1>
+      <p class="page-head-desc">Choose what The Literary Society notifies you about &mdash; in your browser and in the notification bell above.</p>
+    </div>
+  </div>
+
+  <div class="settings-shell">
+    <nav class="settings-nav">
+      <a href="{{ url_for('profile.edit') }}">Account &amp; Profile</a>
+      <a href="{{ url_for('profile.theme') }}">Appearance</a>
+      <a href="{{ url_for('notifications.preferences') }}" class="active">Notifications</a>
+      <a href="{{ url_for('profile.me') }}">Back to Profile</a>
+    </nav>
+
+    <div>
+      <div class="settings-section" style="border-bottom:none; margin-bottom:0;">
+        <form method="post" novalidate style="max-width: 520px;">
+          {{ form.hidden_tag() }}
+
+          <h2 style="font-size:1rem;">Events</h2>
+          <div class="form-field-check">{{ form.events_new() }} {{ form.events_new.label }}</div>
+          <div class="form-field-check">{{ form.events_reminders() }} {{ form.events_reminders.label }}</div>
+
+          <h2 style="font-size:1rem; margin-top:22px;">Digital Bethak</h2>
+          <div class="form-field-check">{{ form.bethak_opens() }} {{ form.bethak_opens.label }}</div>
+
+          <h2 style="font-size:1rem; margin-top:22px;">Literary</h2>
+          <div class="form-field-check">{{ form.literary_new_publications() }} {{ form.literary_new_publications.label }}</div>
+          <div class="form-field-check">{{ form.literary_editors_picks() }} {{ form.literary_editors_picks.label }}</div>
+
+          <h2 style="font-size:1rem; margin-top:22px;">My Activity</h2>
+          <div class="form-field-check">{{ form.activity_submission_approved() }} {{ form.activity_submission_approved.label }}</div>
+          <div class="form-field-check">{{ form.activity_submission_rejected() }} {{ form.activity_submission_rejected.label }}</div>
+          <div class="form-field-check">{{ form.activity_changes_requested() }} {{ form.activity_changes_requested.label }}</div>
+
+          <h2 style="font-size:1rem; margin-top:22px;">Community</h2>
+          <div class="form-field-check">{{ form.community_comments() }} {{ form.community_comments.label }}</div>
+
+          <h2 style="font-size:1rem; margin-top:22px;">System</h2>
+          <div class="form-field-check">{{ form.system_announcements() }} {{ form.system_announcements.label }}</div>
+
+          <div class="form-actions" style="margin-top:26px;">
+            {{ form.submit(class="btn") }}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

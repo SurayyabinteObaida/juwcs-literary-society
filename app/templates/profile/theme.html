@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Appearance | Settings | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+  <div class="page-head">
+    <div class="page-head-copy">
+      <p class="page-eyebrow">Settings</p>
+      <h1>Appearance</h1>
+      <p class="page-head-desc">Your theme applies across the whole Society &mdash; feed, communities, Bethak, constitution and profile &mdash; and stays saved to your account.</p>
+    </div>
+  </div>
+
+  <div class="settings-shell">
+    <nav class="settings-nav">
+      <a href="{{ url_for('profile.edit') }}">Account &amp; Profile</a>
+      <a href="{{ url_for('profile.theme') }}" class="active">Appearance</a>
+      <a href="{{ url_for('notifications.preferences') }}">Notifications</a>
+      <a href="{{ url_for('profile.me') }}">Back to Profile</a>
+    </nav>
+
+    <div>
+      <div class="settings-section" style="border-bottom:none; margin-bottom:0;">
+        <form method="post" id="theme-settings-form">
+          {{ form.hidden_tag() }}
+          <div class="theme-grid" style="max-width: 640px;">
+            {% for value, label in form.theme.choices %}
+              <button type="button" class="theme-option settings-theme-option tp-{{ value }} {{ 'selected' if form.theme.data == value else '' }}" data-theme-value="{{ value }}">
+                <span class="theme-swatch-preview" aria-hidden="true">
+                  <span class="sw-bg"></span><span class="sw-accent"></span><span class="sw-ink"></span>
+                </span>
+                <span class="theme-opt-label">{{ label }}</span>
+                <span class="theme-opt-check" aria-hidden="true">&#10003;</span>
+              </button>
+            {% endfor %}
+          </div>
+          <input type="hidden" name="theme" id="settings-theme-input" value="{{ form.theme.data }}">
+          <noscript><button type="submit" class="btn" style="margin-top:16px;">Apply Theme</button></noscript>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var form = document.getElementById('theme-settings-form');
+    var hiddenInput = document.getElementById('settings-theme-input');
+    form.querySelectorAll('.settings-theme-option').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var value = btn.getAttribute('data-theme-value');
+        form.querySelectorAll('.settings-theme-option').forEach(function (b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        hiddenInput.value = value;
+        document.documentElement.setAttribute('data-theme', value);
+        try { localStorage.setItem('juwcs-theme', value); } catch (e) {}
+        form.requestSubmit();
+      });
+    });
+  })();
+</script>
+{% endblock %}

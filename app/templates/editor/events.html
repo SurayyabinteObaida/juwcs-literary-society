@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Manage Events | Editor Desk</div>
+{% endblock %}
+{% block content %}
+<div class="app-shell">
+<p class="eyebrow">Editorial Desk</p>
+<h1>Event Management</h1>
+<p style="color: var(--ink-soft); max-width: 620px; margin: 14px 0 28px;">
+  Create, publish and manage society events. Only editors and admins can create or edit events.
+</p>
+
+<div class="editor-quick-actions">
+  <a href="{{ url_for('editor.event_new') }}" class="btn">+ Create Event</a>
+  <a href="{{ url_for('editor.dashboard') }}" class="btn secondary">&larr; Back to Dashboard</a>
+</div>
+
+{% if events %}
+  <div class="editor-table-wrap">
+    <div class="table-scroll">
+<table class="admin-table">
+      <thead>
+        <tr><th>Event</th><th>Date</th><th>Registrations</th><th>Capacity</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for e in events %}
+          <tr>
+            <td><a href="{{ url_for('editor.event_edit', event_id=e.id) }}">{{ e.title }}</a></td>
+            <td>{{ e.start_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+            <td>{{ e.confirmed_registration_count }}</td>
+            <td>{{ e.capacity if e.capacity else 'Unlimited' }}</td>
+            <td>
+              {% if e.status == 'published' %}<span class="status-badge status-approved">published</span>
+              {% elif e.status == 'cancelled' %}<span class="status-badge status-rejected">cancelled</span>
+              {% else %}<span class="status-badge status-draft">draft</span>{% endif %}
+            </td>
+            <td>
+              <div class="admin-actions">
+                <a href="{{ url_for('editor.event_edit', event_id=e.id) }}" class="btn secondary small">Edit</a>
+                <a href="{{ url_for('editor.event_registrations', event_id=e.id) }}" class="btn secondary small">Registrations</a>
+                {% if e.status != 'cancelled' %}
+                  <form method="post" action="{{ url_for('editor.event_cancel', event_id=e.id) }}" class="inline-form">
+                    <button type="submit" class="btn secondary small">Cancel</button>
+                  </form>
+                {% endif %}
+                <form method="post" action="{{ url_for('editor.event_delete', event_id=e.id) }}" class="inline-form" onsubmit="return confirm('Delete this event permanently?');">
+                  <button type="submit" class="btn danger small">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+</div>
+  </div>
+{% else %}
+  <div class="empty-state-v2"><div class="es-icon">&#128203;</div><h3>No events created yet.</h3><p></p></div>
+{% endif %}
+{% endblock %}

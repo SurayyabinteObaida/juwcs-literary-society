@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ community.name }} | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+
+
+
+<div style="display:flex; gap:18px; align-items:flex-end; padding: 0 6px;">
+  <div class="entity-card-icon" style="position:static; width:64px; height:64px; font-size:1.6rem; border-width:4px;" aria-hidden="true">{{ community.name[:1] | upper }}</div>
+  <div style="flex:1;">
+    <p class="page-eyebrow" style="margin:0;">Community</p>
+    <h1 style="margin: 2px 0 0;">{{ community.name }}</h1>
+  </div>
+  {% if current_user.is_authenticated and current_user.is_approved %}
+    <a class="btn" href="{{ url_for('posts.create', slug=community.slug) }}">Write a post</a>
+  {% endif %}
+</div>
+
+<p style="color: var(--ink-soft); max-width: 640px; margin: 18px 0 0;">{{ community.description }}</p>
+{% if community.guidelines_text %}
+  <p style="font-size: 0.9rem; color: var(--ink-faint); margin: 10px 0 0; max-width: 640px;">{{ community.guidelines_text }}</p>
+{% endif %}
+
+<div class="lit-tabs" role="tablist" style="margin-top: 28px;">
+  <button type="button" class="active" data-tab="posts" role="tab" aria-selected="true">Posts</button>
+  <button type="button" data-tab="about" role="tab" aria-selected="false">About</button>
+</div>
+
+<div class="tab-panel" data-panel="posts">
+  <div class="tag-row" style="margin-bottom: 24px;">
+    <a href="{{ url_for('communities.detail', slug=community.slug) }}"
+       class="tag-pill {{ 'active' if not active_category_id else '' }}">All</a>
+    {% for cat in community.categories %}
+      <a href="{{ url_for('communities.detail', slug=community.slug, category=cat.id) }}"
+         class="tag-pill {{ 'active' if active_category_id == cat.id else '' }}">{{ cat.label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if posts %}
+    <div class="stagger-in">
+      {% for post in posts %}
+        <article class="submission-card" style="margin-bottom: 14px;">
+          <div class="sc-icon" aria-hidden="true">&#9998;</div>
+          <div class="sc-body">
+            <p class="sc-meta" style="margin-bottom:4px;">
+              <span class="content-type-chip">{{ post.content_type_label }}</span>
+              <span class="accent-dot">&#183;</span>{{ post.created_at.strftime('%d %b %Y') }}
+              {% for cat in post.categories %}<span class="accent-dot">&#183;</span>{{ cat.label }}{% endfor %}
+            </p>
+            <p class="sc-title" style="font-size: 1.05rem;"><a href="{{ url_for('posts.view', post_id=post.id) }}">{{ post.title }}</a></p>
+            <p class="sc-meta">by {{ post.author.name }} &middot; {{ post.reaction_count('like') }} likes &middot; {{ post.comments.count() }} comments</p>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state-v2">
+      <div class="es-icon">&#9998;</div><h3>Nothing here yet</h3>
+      <p>
+        {% if current_user.is_authenticated and current_user.is_approved %}
+          <a href="{{ url_for('posts.create', slug=community.slug) }}">Write the first post</a>.
+        {% else %}
+          Be the first to share something once you're signed in.
+        {% endif %}
+      </p>
+    </div>
+  {% endif %}
+</div>
+
+<div class="tab-panel" data-panel="about" hidden>
+  <div class="lit-card" style="padding: 24px; max-width: 620px;">
+    <h3 style="margin-top:0;">Guidelines &amp; Tags</h3>
+    <p style="color: var(--ink-soft);">{{ community.guidelines_text or "This community follows the Society's general constitution — see the Constitution page for full detail." }}</p>
+    {% if community.categories %}
+      <div class="tag-row" style="margin-top: 14px;">
+        {% for cat in community.categories %}<span class="tag">{{ cat.label }}</span>{% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+</div>
+
+<script>
+  (function () {
+    var tabs = document.querySelectorAll('.lit-tabs [data-tab]');
+    var panels = document.querySelectorAll('.tab-panel[data-panel]');
+    tabs.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        tabs.forEach(function (b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        panels.forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== btn.getAttribute('data-tab'); });
+      });
+    });
+  })();
+</script>
+{% endblock %}

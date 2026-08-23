@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Feed | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+
+<div class="page-head">
+  <div class="page-head-copy">
+    <p class="page-eyebrow">{% if current_user.is_authenticated %}Welcome back, {{ current_user.name.split(' ')[0] }}{% else %}The Society Feed{% endif %}</p>
+    <h1>Your Feed</h1>
+    <p class="page-head-desc">The latest writing from across the Society, curated as it's published.</p>
+  </div>
+</div>
+
+<div class="quick-actions-grid">
+  <a class="quick-action" href="{{ url_for('communities.index') }}">
+    <span class="qa-icon" aria-hidden="true">&#9998;</span>
+    <span class="qa-label">Write</span>
+    <span class="qa-sub">Start something new</span>
+  </a>
+  <a class="quick-action" href="{{ url_for('communities.index') }}">
+    <span class="qa-icon" aria-hidden="true">&#9776;</span>
+    <span class="qa-label">Communities</span>
+    <span class="qa-sub">Find your corner</span>
+  </a>
+  <a class="quick-action" href="{{ url_for('events.index') }}">
+    <span class="qa-icon" aria-hidden="true">&#128197;</span>
+    <span class="qa-label">Events</span>
+    <span class="qa-sub">What's happening</span>
+  </a>
+  <a class="quick-action" href="{{ url_for('bethak.index') }}">
+    <span class="qa-icon" aria-hidden="true">&#128172;</span>
+    <span class="qa-label">Bethak</span>
+    <span class="qa-sub">Join the mehfil</span>
+  </a>
+  {% if current_user.is_authenticated %}
+    <a class="quick-action" href="{{ url_for('profile.me') }}">
+      <span class="qa-icon" aria-hidden="true">&#128100;</span>
+      <span class="qa-label">My Profile</span>
+      <span class="qa-sub">Your portfolio</span>
+    </a>
+  {% endif %}
+</div>
+
+<div class="page-grid">
+  <div>
+
+    {% if featured_post %}
+      <a href="{{ url_for('posts.view', post_id=featured_post.id) }}" class="lit-card hoverable" style="display:block; text-decoration:none; padding: 26px; margin-bottom: 32px;">
+        <p class="page-eyebrow" style="margin:0 0 8px;">Latest from {{ featured_post.community.name }}</p>
+        <h2 style="margin: 0 0 10px; font-size: 1.5rem; color: var(--ink);">{{ featured_post.title }}</h2>
+        <p style="color: var(--ink-soft); margin: 0 0 12px;">{{ featured_post.body | excerpt(220) }}</p>
+        <p style="color: var(--ink-faint); font-size: 0.84rem; margin:0;">by {{ featured_post.author.name }} &middot; {{ featured_post.created_at.strftime('%d %b %Y') }}</p>
+      </a>
+    {% endif %}
+
+    <p class="section-label">
+      <span>Recent writing</span>
+      <a class="see-all" href="{{ url_for('communities.index') }}">Browse communities &rarr;</a>
+    </p>
+    {% if feed_posts %}
+      <div class="stagger-in">
+        {% for post in feed_posts %}
+          <article class="submission-card" style="margin-bottom: 12px;">
+            <div class="sc-icon" aria-hidden="true">&#9998;</div>
+            <div class="sc-body">
+              <p class="sc-meta" style="margin-bottom: 3px;">
+                <span class="content-type-chip">{{ post.content_type_label }}</span>
+                <span class="accent-dot">&#183;</span>{{ post.community.name }}<span class="accent-dot">&#183;</span>{{ post.created_at.strftime('%d %b %Y') }}
+              </p>
+              <p class="sc-title" style="font-size: 1.02rem;"><a href="{{ url_for('posts.view', post_id=post.id) }}">{{ post.title }}</a></p>
+              <p class="sc-meta">by {{ post.author.name }}</p>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% elif not featured_post %}
+      <div class="empty-state-v2"><div class="es-icon">&#9998;</div><h3>No posts yet</h3><p>Be the first to share something.</p></div>
+    {% else %}
+      <p style="color: var(--ink-faint); font-size: 0.9rem;">That's everything for now.</p>
+    {% endif %}
+  </div>
+
+  <aside>
+    <div class="sidebar-block">
+      <h3>Top contributors</h3>
+      {% if leaders %}
+        <ul class="sidebar-list">
+          {% for l in leaders %}
+            <li><span class="sidebar-rank">{{ loop.index }}</span>{{ l.name }} &middot; {{ l.post_count }} posts</li>
+          {% endfor %}
+        </ul>
+        <p style="margin-top: 14px; font-size: 0.85rem;"><a href="{{ url_for('main.leaderboard') }}">Full leaderboard &rarr;</a></p>
+      {% else %}
+        <p style="font-size: 0.88rem; color: var(--ink-faint);">No contributions yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="sidebar-block">
+      <h3>Communities</h3>
+      <ul class="sidebar-list">
+        {% for c in communities %}
+          <li><a href="{{ url_for('communities.detail', slug=c.slug) }}">{{ c.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+</div>
+</div>
+
+{% endblock %}

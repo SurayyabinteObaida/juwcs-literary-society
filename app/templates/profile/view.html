@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}{{ user.name }} | The Literary Society{% endblock %}
+{% block content %}
+<div class="app-shell">
+
+<div class="profile-cover" aria-hidden="true"></div>
+<div class="profile-header-v2 profile-header">
+  <span class="avatar avatar-lg">
+    {% if user.avatar_url %}<img src="{{ user.avatar_url }}" alt="">{% else %}{{ user.name[:1] | upper }}{% endif %}
+  </span>
+  <div class="profile-identity">
+    <div class="profile-name-row">
+      <h1 class="profile-name">{{ user.name }}</h1>
+      <span class="nav-role-chip role-{{ user.role }}">{{ user.role_label }}</span>
+    </div>
+    {% if user.username %}<p class="profile-username">@{{ user.username }}</p>{% endif %}
+  </div>
+</div>
+
+<div style="max-width: 700px; margin: 18px 0 0;">
+  {% if user.bio %}<p class="profile-bio">{{ user.bio }}</p>{% endif %}
+
+  <div class="profile-meta-row">
+    <span>Joined {{ user.created_at.strftime('%B %Y') }}</span>
+    {% if rank %}<span>Leaderboard rank #{{ rank }}</span>{% endif %}
+  </div>
+
+  {% if user.interest_list %}
+    <div class="tag-row" style="margin: 12px 0 18px;">
+      {% for interest in user.interest_list %}<span class="tag">{{ interest }}</span>{% endfor %}
+    </div>
+  {% endif %}
+
+  {% if is_own %}
+    <div class="profile-actions" style="margin: 4px 0 24px;">
+      <a href="{{ url_for('profile.edit') }}" class="btn secondary small">Edit Profile</a>
+      <a href="{{ url_for('profile.theme') }}" class="btn secondary small">Change Theme</a>
+      <a href="{{ url_for('communities.index') }}" class="btn small">Write Something New</a>
+    </div>
+  {% endif %}
+</div>
+
+<div class="dash-stat-row" style="margin: 28px 0 36px;">
+  <div class="dash-stat"><span class="ds-num">{{ user.approved_post_count }}</span><span class="ds-label">Published</span></div>
+  <div class="dash-stat"><span class="ds-num">{{ user.likes_received }}</span><span class="ds-label">Likes received</span></div>
+  <div class="dash-stat"><span class="ds-num">{{ user.badges.count() }}</span><span class="ds-label">Badges</span></div>
+  <div class="dash-stat"><span class="ds-num">{{ profile_communities | length }}</span><span class="ds-label">Communities</span></div>
+</div>
+
+<div class="lit-tabs" role="tablist">
+  <button type="button" class="active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+  <button type="button" data-tab="works" role="tab" aria-selected="false">Works</button>
+  <button type="button" data-tab="communities" role="tab" aria-selected="false">Communities</button>
+  <button type="button" data-tab="achievements" role="tab" aria-selected="false">Achievements</button>
+</div>
+
+{% macro status_badge(status) -%}
+  <span class="status-badge status-{{ status }}">{{ status }}</span>
+{%- endmacro %}
+
+<div class="tab-panel" data-panel="overview">
+  <p class="section-label" style="margin-top:0;"><span>Recently Published</span></p>
+  {% if groups.approved %}
+    <div class="stagger-in">
+      {% for p in groups.approved[:5] %}
+        <div class="submission-card" style="margin-bottom: 10px;">
+          <div class="sc-icon" aria-hidden="true">&#9998;</div>
+          <div class="sc-body">
+            <p class="sc-title"><a href="{{ url_for('posts.view', post_id=p.id) }}">{{ p.title }}</a></p>
+            <p class="sc-meta">{{ p.content_type_label }} &middot; {{ p.community.name }} &middot; {{ p.created_at.strftime('%d %b %Y') }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state-v2"><div class="es-icon">&#9998;</div><h3>Nothing published yet</h3><p>Once a piece is approved it'll show up here.</p></div>
+  {% endif %}
+
+  {% set badge_list = earned_badges.values() | list %}
+  {% if badge_list %}
+    <p class="section-label"><span>Badges</span></p>
+    <div class="badge-row">
+      {% for ub in badge_list %}
+        <span class="badge-chip {{ 'negative' if ub.badge.kind == 'negative' else '' }}" title="{{ ub.badge.description }}">{{ ub.badge.label }}</span>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<div class="tab-panel" data-panel="works" hidden>
+  <div class="contribution-group">
+    <h3 style="font-size: 0.95rem; color: var(--ink-soft); margin-bottom: 8px;">Published &middot; {{ groups.approved | length }}</h3>
+    {% if groups.approved %}
+      {% for p in groups.approved %}
+        <div class="contribution-row">
+          <div class="contribution-main">
+            <p class="contribution-title"><a href="{{ url_for('posts.view', post_id=p.id) }}">{{ p.title }}</a></p>
+            <p class="contribution-sub">{{ p.content_type_label }} &middot; {{ p.community.name }} &middot; {{ p.created_at.strftime('%d %b %Y') }}</p>
+          </div>
+          {{ status_badge('approved') }}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="color: var(--ink-faint); font-size: 0.9rem;">Nothing published yet.</p>
+    {% endif %}
+  </div>
+
+  {% if is_own or (current_user.is_authenticated and current_user.is_admin) %}
+    <div class="contribution-group">
+      <h3 style="font-size: 0.95rem; color: var(--ink-soft); margin-bottom: 8px;">Pending Review &middot; {{ groups.pending | length }}</h3>
+      {% if groups.pending %}
+        {% for p in groups.pending %}
+          <div class="contribution-row">
+            <div class="contribution-main">
+              <p class="contribution-title">{{ p.title }}</p>
+              <p class="contribution-sub">{{ p.content_type_label }} &middot; {{ p.community.name }} &middot; submitted {{ p.submitted_at.strftime('%d %b %Y') if p.submitted_at else '' }}</p>
+            </div>
+            {{ status_badge('pending') }}
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--ink-faint); font-size: 0.9rem;">Nothing waiting on an editor right now.</p>
+      {% endif %}
+    </div>
+
+    <div class="contribution-group">
+      <h3 style="font-size: 0.95rem; color: var(--ink-soft); margin-bottom: 8px;">Revision Required &middot; {{ groups.rejected | length }}</h3>
+      {% if groups.rejected %}
+        {% for p in groups.rejected %}
+          <div class="contribution-row">
+            <div class="contribution-main">
+              <p class="contribution-title">{{ p.title }}</p>
+              <p class="contribution-sub">{{ p.content_type_label }} &middot; {{ p.community.name }}</p>
+              {% if p.rejection_reason %}<p class="contribution-sub" style="color: var(--danger);">Editor feedback: {{ p.rejection_reason }}</p>{% endif %}
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              {{ status_badge('rejected') }}
+              {% if is_own %}<a href="{{ url_for('posts.edit', post_id=p.id) }}" class="btn secondary small">Revise &amp; Resubmit</a>{% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--ink-faint); font-size: 0.9rem;">No rejected submissions.</p>
+      {% endif %}
+    </div>
+
+    <div class="contribution-group">
+      <h3 style="font-size: 0.95rem; color: var(--ink-soft); margin-bottom: 8px;">Drafts &middot; {{ groups.draft | length }}</h3>
+      {% if groups.draft %}
+        {% for p in groups.draft %}
+          <div class="contribution-row">
+            <div class="contribution-main">
+              <p class="contribution-title">{{ p.title }}</p>
+              <p class="contribution-sub">{{ p.content_type_label }} &middot; {{ p.community.name }}</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              {{ status_badge('draft') }}
+              {% if is_own %}<a href="{{ url_for('posts.edit', post_id=p.id) }}" class="btn secondary small">Continue Writing</a>{% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--ink-faint); font-size: 0.9rem;">No drafts saved.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+<div class="tab-panel" data-panel="communities" hidden>
+  {% if profile_communities %}
+    <div class="card-grid">
+      {% for c in profile_communities %}
+        <a class="lit-card hoverable entity-card" href="{{ url_for('communities.detail', slug=c.slug) }}" style="text-decoration:none; padding: 18px;">
+          <h3 style="margin:0 0 6px;">{{ c.name }}</h3>
+          <p class="entity-desc">{{ c.description | excerpt(90) }}</p>
+          <span class="entity-card-cta">Visit community &rarr;</span>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state-v2"><div class="es-icon">&#9776;</div><h3>No communities yet</h3><p>Published work in a community shows it here.</p></div>
+  {% endif %}
+</div>
+
+<div class="tab-panel" data-panel="achievements" hidden>
+  <div class="badges-grid">
+    {% for b in all_badges if b.kind == 'positive' %}
+      {% set ub = earned_badges.get(b.code) %}
+      <div class="badge-card {{ 'earned' if ub else 'locked' }}">
+        <div class="bc-icon" aria-hidden="true">{% if ub %}🏆{% else %}🔒{% endif %}</div>
+        <p class="bc-name">{{ b.label }}</p>
+        <p class="bc-desc">{{ b.description }}</p>
+        {% if not ub %}<p class="bc-desc" style="margin-top:6px; font-style: italic;">Not earned yet</p>{% endif %}
+      </div>
+    {% else %}
+      <div class="empty-state-v2"><div class="es-icon">&#127942;</div><h3>No badges configured</h3><p>Badges appear here once the Society defines them.</p></div>
+    {% endfor %}
+  </div>
+</div>
+
+</div>
+
+<script>
+  (function () {
+    var tabs = document.querySelectorAll('.lit-tabs [data-tab]');
+    var panels = document.querySelectorAll('.tab-panel[data-panel]');
+    tabs.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        tabs.forEach(function (b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        panels.forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== btn.getAttribute('data-tab'); });
+      });
+    });
+  })();
+</script>
+{% endblock %}
