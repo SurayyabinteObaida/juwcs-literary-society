@@ -1,16 +1,15 @@
-from app.models import Event, EventStatus, EventRegistration, RegistrationStatus, Notification
+from datetime import datetime, timezone
 
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import current_user
 
 from app.extensions import db
-from app.models import Event, EventStatus, EventRegistration, RegistrationStatus
+from app.models import Event, EventStatus, EventRegistration, RegistrationStatus, Notification
 from app.services import notification_service
 from app.utils import create_stored_image, UploadError
 
 from . import bp
 from .forms import EventForm
-
 
 def _aware(dt):
     """Editor forms submit naive local-time datetimes; treat them as UTC so
